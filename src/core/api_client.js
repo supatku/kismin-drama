@@ -59,8 +59,9 @@ const API = {
             const url = CONFIG.buildUrl(CONFIG.ENDPOINTS.CATEGORY, { category, page });
             const data = await this._fetch(url);
 
-            if (data.success && Array.isArray(data.items)) {
-                return data.items.map(item => Mappers.mapItem(item));
+            if (data.success && Array.isArray(data.items || data.data)) {
+                const items = data.items || data.data;
+                return items.map(item => Mappers.mapItem(item));
             }
             return [];
         } catch (error) {
@@ -82,8 +83,9 @@ const API = {
 
             console.log(`[API] Detail response:`, data);
 
-            if (data.success && data.item) {
-                return Mappers.mapDetail(data.item);
+            if (data.success && (data.item || data.data)) {
+                const itemData = data.item || data.data;
+                return Mappers.mapDetail(itemData);
             }
             
             // Fallback: return mock data if API fails
@@ -128,8 +130,9 @@ const API = {
             const url = CONFIG.buildUrl(CONFIG.ENDPOINTS.SEARCH, { query });
             const data = await this._fetch(url);
 
-            if (data.success && Array.isArray(data.items)) {
-                return data.items.map(item => Mappers.mapItem(item));
+            if (data.success && Array.isArray(data.items || data.data)) {
+                const items = data.items || data.data;
+                return items.map(item => Mappers.mapItem(item));
             }
             return [];
         } catch (error) {

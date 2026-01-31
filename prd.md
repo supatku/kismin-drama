@@ -15,7 +15,7 @@ Membangun aplikasi streaming drama vertical berbasis **Telegram Mini App (Web)**
 - Mengambil konten dari API SekaiDrama
 - Fokus ke pengalaman nonton cepat dan simpel
 - Dibangun dengan biaya **0 rupiah** (full free hosting)
- first clone https://github.com/Sansekai/SekaiDrama lalu setelah itu rombak design ui dengan menggunakan joko ui https://github.com/rayasabari/joko-ui 
+ 
 ---
 
 ## 2. Goals (MVP)
