@@ -7,8 +7,8 @@ import CONFIG from './config.js';
 
 const Storage = {
     /**
-     * Get all favorite drama IDs
-     * @returns {Array<number>}
+     * Get all favorite items
+     * @returns {Array}
      */
     getFavorites() {
         try {
@@ -21,13 +21,13 @@ const Storage = {
     },
 
     /**
-     * Add drama to favorites
-     * @param {number} dramaId
+     * Add item to favorites
+     * @param {string|number} dramaId
      */
     addFavorite(dramaId) {
         try {
             const favorites = this.getFavorites();
-            if (!favorites.includes(dramaId)) {
+            if (!this.isFavorite(dramaId)) {
                 favorites.push(dramaId);
                 localStorage.setItem(CONFIG.STORAGE_KEYS.FAVORITES, JSON.stringify(favorites));
             }
@@ -37,13 +37,13 @@ const Storage = {
     },
 
     /**
-     * Remove drama from favorites
-     * @param {number} dramaId
+     * Remove item from favorites
+     * @param {string|number} dramaId
      */
     removeFavorite(dramaId) {
         try {
             const favorites = this.getFavorites();
-            const filtered = favorites.filter(id => id !== dramaId);
+            const filtered = favorites.filter(id => String(id) !== String(dramaId));
             localStorage.setItem(CONFIG.STORAGE_KEYS.FAVORITES, JSON.stringify(filtered));
         } catch (error) {
             console.error('Error removing favorite:', error);
@@ -51,17 +51,18 @@ const Storage = {
     },
 
     /**
-     * Check if drama is favorited
-     * @param {number} dramaId
+     * Check if item is favorited
+     * @param {string|number} dramaId
      * @returns {boolean}
      */
     isFavorite(dramaId) {
-        return this.getFavorites().includes(dramaId);
+        const favorites = this.getFavorites();
+        return favorites.some(id => String(id) === String(dramaId));
     },
 
     /**
      * Toggle favorite status
-     * @param {number} dramaId
+     * @param {string|number} dramaId
      * @returns {boolean} New favorite status
      */
     toggleFavorite(dramaId) {

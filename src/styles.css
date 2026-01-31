@@ -18,7 +18,7 @@
   --color-success: #51cf66;
   --color-error: #ff6b6b;
   --color-warning: #ffd93d;
-  
+
   /* Spacing */
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;
@@ -26,7 +26,7 @@
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
   --spacing-2xl: 3rem;
-  
+
   /* Typography */
   --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   --font-size-xs: 0.75rem;
@@ -36,23 +36,23 @@
   --font-size-xl: 1.25rem;
   --font-size-2xl: 1.5rem;
   --font-size-3xl: 2rem;
-  
+
   /* Border Radius */
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
-  
+
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6);
-  
+
   /* Transitions */
   --transition-fast: 150ms ease;
   --transition-base: 250ms ease;
   --transition-slow: 350ms ease;
-  
+
   /* Z-Index */
   --z-base: 1;
   --z-elevated: 10;
@@ -82,7 +82,8 @@ body {
   color: var(--color-text);
   background-color: var(--color-bg);
   overflow-x: hidden;
-  padding-bottom: 80px; /* Space for bottom nav */
+  padding-bottom: 80px;
+  /* Space for bottom nav */
 }
 
 img {
@@ -112,13 +113,21 @@ a {
 
 .page {
   padding: var(--spacing-md);
-  padding-top: calc(var(--spacing-xl) + 60px); /* Space for header */
+  padding-top: calc(var(--spacing-xl) + 60px);
+  /* Space for header */
   animation: fadeIn var(--transition-base);
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ==================== Header ==================== */
@@ -202,6 +211,46 @@ a {
   font-weight: 500;
 }
 
+/* ==================== Category Tabs ==================== */
+.category-tabs {
+  display: flex;
+  gap: var(--spacing-sm);
+  overflow-x: auto;
+  padding: var(--spacing-sm) 0 var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE 10+ */
+}
+
+.category-tabs::-webkit-scrollbar {
+  display: none;
+  /* Safari and Chrome */
+}
+
+.category-tab {
+  white-space: nowrap;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-xl);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  transition: all var(--transition-fast);
+  border: 1px solid var(--color-bg-elevated);
+}
+
+.category-tab.active {
+  background-color: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+.category-tab:active {
+  transform: scale(0.95);
+}
+
 /* ==================== Drama Grid ==================== */
 .drama-grid {
   display: grid;
@@ -281,6 +330,7 @@ a {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  line-clamp: 2;
   line-height: 1.4;
 }
 
@@ -395,6 +445,28 @@ a {
   font-weight: 500;
 }
 
+.season-group {
+  margin-bottom: var(--spacing-xl);
+}
+
+.episode-card {
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-bg-elevated);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.episode-card:hover {
+  background-color: var(--color-bg-elevated);
+  border-color: var(--color-primary);
+}
+
+.episode-card:active {
+  transform: scale(0.98);
+}
+
 /* ==================== Buttons ==================== */
 .btn {
   display: inline-flex;
@@ -441,24 +513,20 @@ a {
 }
 
 .skeleton-box {
-  background: linear-gradient(
-    90deg,
-    var(--color-bg-secondary) 25%,
-    var(--color-bg-elevated) 50%,
-    var(--color-bg-secondary) 75%
-  );
+  background: linear-gradient(90deg,
+      var(--color-bg-secondary) 25%,
+      var(--color-bg-elevated) 50%,
+      var(--color-bg-secondary) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
 
 .skeleton-line {
   height: 1rem;
-  background: linear-gradient(
-    90deg,
-    var(--color-bg-secondary) 25%,
-    var(--color-bg-elevated) 50%,
-    var(--color-bg-secondary) 75%
-  );
+  background: linear-gradient(90deg,
+      var(--color-bg-secondary) 25%,
+      var(--color-bg-elevated) 50%,
+      var(--color-bg-secondary) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: var(--radius-sm);
@@ -470,8 +538,13 @@ a {
 }
 
 @keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .error-card,
@@ -565,12 +638,38 @@ a {
 }
 
 /* ==================== Utility Classes ==================== */
-.text-center { text-align: center; }
-.text-muted { color: var(--color-text-muted); }
-.mt-sm { margin-top: var(--spacing-sm); }
-.mt-md { margin-top: var(--spacing-md); }
-.mt-lg { margin-top: var(--spacing-lg); }
-.mb-sm { margin-bottom: var(--spacing-sm); }
-.mb-md { margin-bottom: var(--spacing-md); }
-.mb-lg { margin-bottom: var(--spacing-lg); }
-.hidden { display: none; }
+.text-center {
+  text-align: center;
+}
+
+.text-muted {
+  color: var(--color-text-muted);
+}
+
+.mt-sm {
+  margin-top: var(--spacing-sm);
+}
+
+.mt-md {
+  margin-top: var(--spacing-md);
+}
+
+.mt-lg {
+  margin-top: var(--spacing-lg);
+}
+
+.mb-sm {
+  margin-bottom: var(--spacing-sm);
+}
+
+.mb-md {
+  margin-bottom: var(--spacing-md);
+}
+
+.mb-lg {
+  margin-bottom: var(--spacing-lg);
+}
+
+.hidden {
+  display: none;
+}

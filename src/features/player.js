@@ -1,9 +1,7 @@
 /**
  * Player Page
- * KISMIN Mode - HLS video player with tap-to-play
+ * KISMIN Mode - Improved player for Rebahan API (direct URLs)
  */
-
-import API from '../core/api_client.js';
 
 const PlayerPage = {
     player: null,
@@ -11,100 +9,104 @@ const PlayerPage = {
 
     /**
      * Initialize player page
-     * @param {string} episodeId
+     * @param {string} encodedUrl - Base64 encoded stream/player URL
      */
-    async init(episodeId) {
+    async init(encodedUrl) {
         const container = document.getElementById('app');
 
         try {
-            // Get stream URL
-            const streamUrl = await API.getStreamUrl(episodeId);
+            // Decode the URL
+            const streamUrl = atob(encodedUrl);
 
-            // Render player
+            if (!streamUrl) {
+                throw new Error('Video URL missing');
+            }
+
+            // Render player structure
             container.innerHTML = `
         <div class="player-container">
           <button class="player-close" id="close-player">✕</button>
-          <video 
-            id="video-player" 
-            controls 
-            playsinline
-            preload="metadata"
-            style="width: 100%; height: 100%;"
-          ></video>
+          <div id="player-wrapper" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+            <p id="player-status">Loading video...</p>
+          </div>
         </div>
       `;
 
-            // Initialize HLS player
-            await this.initPlayer(streamUrl);
+            // Handle different types of player URLs
+            this.setupPlayer(streamUrl);
 
             // Attach listeners
             this.attachListeners();
 
         } catch (error) {
             console.error('Error loading video:', error);
-            alert('Failed to load video');
+            alert('Failed to load video URL');
             window.history.back();
         }
     },
 
     /**
-     * Initialize HLS.js player
+     * Setup the player based on URL type
      */
-    async initPlayer(streamUrl) {
+    setupPlayer(streamUrl) {
+        const wrapper = document.getElementById('player-wrapper');
+
+        // If it's an iframe (common for Rebahan/Zeldvorik)
+        if (streamUrl.includes('<iframe')) {
+            wrapper.innerHTML = streamUrl;
+            const iframe = wrapper.querySelector('iframe');
+            if (iframe) {
+                iframe.style.width = '100%';
+                iframe.style.height = '100%';
+                iframe.style.border = 'none';
+            }
+            return;
+        }
+
+        // If it's a direct URL that might need an iframe or a video tag
+        if (streamUrl.includes('.m3u8') || streamUrl.includes('.mp4')) {
+            wrapper.innerHTML = `
+                <video 
+                    id="video-player" 
+                    controls 
+                    playsinline
+                    preload="metadata"
+                    style="width: 100%; height: 100%;"
+                ></video>
+            `;
+            this.initVideoTag(streamUrl);
+        } else {
+            // Probably an embed URL
+            wrapper.innerHTML = `
+                <iframe 
+                    src="${streamUrl}" 
+                    style="width: 100%; height: 100%; border: none;" 
+                    allowfullscreen
+                    allow="autoplay; encrypted-media"
+                ></iframe>
+            `;
+        }
+    },
+
+    /**
+     * Initialize HLS.js for video tag
+     */
+    async initVideoTag(streamUrl) {
         const video = document.getElementById('video-player');
         this.player = video;
 
-        // Check if HLS.js is supported
-        if (!streamUrl.endsWith('.m3u8')) {
-            // Direct video file
-            video.src = streamUrl;
-            return;
-        }
-
-        // Check if browser has native HLS support (Safari)
-        if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = streamUrl;
-            return;
-        }
-
-        // Use HLS.js for other browsers
-        if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-            this.hls = new Hls({
-                maxBufferLength: 30,
-                maxMaxBufferLength: 60
-            });
-
-            this.hls.loadSource(streamUrl);
-            this.hls.attachMedia(video);
-
-            this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                console.log('HLS manifest loaded');
-                // Auto-play is disabled for Telegram - user must tap to play
-            });
-
-            this.hls.on(Hls.Events.ERROR, (event, data) => {
-                console.error('HLS error:', data);
-                if (data.fatal) {
-                    switch (data.type) {
-                        case Hls.ErrorTypes.NETWORK_ERROR:
-                            console.error('Fatal network error, try to recover');
-                            this.hls.startLoad();
-                            break;
-                        case Hls.ErrorTypes.MEDIA_ERROR:
-                            console.error('Fatal media error, try to recover');
-                            this.hls.recoverMediaError();
-                            break;
-                        default:
-                            console.error('Fatal error, cannot recover');
-                            this.destroy();
-                            alert('Video playback error');
-                            window.history.back();
-                            break;
-                    }
-                }
-            });
+        // Check for HLS
+        if (streamUrl.includes('.m3u8')) {
+            if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = streamUrl;
+            } else if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+                this.hls = new Hls();
+                this.hls.loadSource(streamUrl);
+                this.hls.attachMedia(video);
+            } else {
+                video.src = streamUrl;
+            }
         } else {
-            // Fallback to direct source
             video.src = streamUrl;
         }
     },
@@ -113,7 +115,6 @@ const PlayerPage = {
      * Attach event listeners
      */
     attachListeners() {
-        // Close button
         const closeBtn = document.getElementById('close-player');
         if (closeBtn) {
             closeBtn.addEventListener('click', () => {
@@ -122,7 +123,6 @@ const PlayerPage = {
             });
         }
 
-        // Handle Telegram back button (if available)
         if (window.Telegram?.WebApp) {
             window.Telegram.WebApp.BackButton.show();
             window.Telegram.WebApp.BackButton.onClick(() => {
@@ -130,13 +130,6 @@ const PlayerPage = {
                 window.history.back();
             });
         }
-
-        // Pause video when page is hidden (e.g., Telegram app minimized)
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden && this.player) {
-                this.player.pause();
-            }
-        });
     },
 
     /**
@@ -154,7 +147,6 @@ const PlayerPage = {
             this.player = null;
         }
 
-        // Hide Telegram back button
         if (window.Telegram?.WebApp) {
             window.Telegram.WebApp.BackButton.hide();
         }
