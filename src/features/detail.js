@@ -217,8 +217,36 @@ const DetailPage = {
     const overlay = document.createElement('div');
     overlay.id = 'inline-player-overlay';
     overlay.innerHTML = `
+      <style>
+        .player-close-btn {
+          position: absolute;
+          top: 16px;
+          right: 16px;
+          width: 44px;
+          height: 44px;
+          background: rgba(0,0,0,0.6);
+          border: none;
+          border-radius: 50%;
+          color: white;
+          font-size: 24px;
+          cursor: pointer;
+          z-index: 10001;
+          transition: opacity 0.3s ease, transform 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .player-close-btn.hidden {
+          opacity: 0;
+          pointer-events: none;
+          transform: scale(0.8);
+        }
+        .player-close-btn:active {
+          transform: scale(0.9);
+        }
+      </style>
       <div class="inline-player-container" id="inline-player-container">
-        <button class="player-close" id="close-inline-player">×</button>
+        <button class="player-close-btn" id="close-inline-player">×</button>
         <div id="inline-loading" style="display:flex; justify-content:center; align-items:center; width:100%; height:100%; background:#000; color:#fff;">
           <div style="text-align:center;">
             <div style="width:40px; height:40px; border:3px solid rgba(255,255,255,0.3); border-top:3px solid #ff6b6b; border-radius:50%; animation:spin 1s linear infinite; margin:0 auto 16px;"></div>
@@ -266,6 +294,28 @@ const DetailPage = {
     // 3. SETUP CLOSE BUTTON & FULLSCREEN EXIT HANDLER
     const closeBtn = document.getElementById('close-inline-player');
     closeBtn.addEventListener('click', () => this.closeInlinePlayer());
+
+    // AUTO-HIDE CLOSE BUTTON for better UX
+    let hideTimeout;
+    const hideCloseBtn = () => {
+      closeBtn.classList.add('hidden');
+    };
+    const showCloseBtn = () => {
+      closeBtn.classList.remove('hidden');
+      clearTimeout(hideTimeout);
+      hideTimeout = setTimeout(hideCloseBtn, 3000); // Hide after 3 seconds
+    };
+
+    // Hide initially after 2 seconds
+    hideTimeout = setTimeout(hideCloseBtn, 2000);
+
+    // Show on tap/click anywhere on container
+    container.addEventListener('click', (e) => {
+      // Don't toggle if clicking on iframe (let video handle its controls)
+      if (e.target.tagName !== 'IFRAME') {
+        showCloseBtn();
+      }
+    });
 
     // Handle ESC key / fullscreen exit
     document.addEventListener('fullscreenchange', this.handleFullscreenChange);
