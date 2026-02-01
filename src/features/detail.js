@@ -246,7 +246,9 @@ const DetailPage = {
         }
       </style>
       <div class="inline-player-container" id="inline-player-container">
-        <button class="player-close-btn" id="close-inline-player">×</button>
+        <button class="player-close-btn hidden" id="close-inline-player">×</button>
+        <!-- Cover for Google Drive's external link icon -->
+        <div style="position:absolute; top:0; right:0; width:60px; height:60px; background:#000; z-index:10000;"></div>
         <div id="inline-loading" style="display:flex; justify-content:center; align-items:center; width:100%; height:100%; background:#000; color:#fff;">
           <div style="text-align:center;">
             <div style="width:40px; height:40px; border:3px solid rgba(255,255,255,0.3); border-top:3px solid #ff6b6b; border-radius:50%; animation:spin 1s linear infinite; margin:0 auto 16px;"></div>
