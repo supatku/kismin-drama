@@ -130,12 +130,14 @@ const DetailPage = {
           ${hasEpisodes ? `
             <h3 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md);">Episodes</h3>
             <div class="episode-list">
-              ${item.seasons.map(season => `
+              ${item.seasons.map(season => {
+      // Flatten all episodes with index for navigation
+      return `
                 <div class="season-group">
                   <h4 style="margin: var(--spacing-md) 0; color: var(--color-primary);">Season ${season.season}</h4>
                   <div style="display: grid; gap: var(--spacing-sm);">
-                    ${season.episodes.map(ep => `
-                      <div class="episode-card" data-url="${btoa(ep.playerUrl)}">
+                    ${season.episodes.map((ep, idx) => `
+                      <div class="episode-card" data-url="${btoa(ep.playerUrl)}" data-episode-index="${idx}" data-season="${season.season}">
                         <div class="episode-card__content">
                           <span style="margin-right: var(--spacing-sm);">Episode ${ep.episode}</span>
                           <span style="flex: 1; color: var(--color-text-secondary);">${ep.title}</span>
@@ -145,7 +147,8 @@ const DetailPage = {
                     `).join('')}
                   </div>
                 </div>
-              `).join('')}
+              `;
+    }).join('')}
             </div>
           ` : ''}
         </div>
@@ -186,9 +189,11 @@ const DetailPage = {
         const epCard = e.target.closest('.episode-card');
         if (epCard) {
           const encodedUrl = epCard.dataset.url;
+          const episodeIndex = parseInt(epCard.dataset.episodeIndex, 10);
+          const seasonNum = parseInt(epCard.dataset.season, 10);
           try {
             const videoUrl = atob(encodedUrl);
-            this.playVideoInline(videoUrl);
+            this.playVideoInline(videoUrl, seasonNum, episodeIndex);
           } catch (err) {
             console.error('[DetailPage] Invalid video URL:', err);
             Utils.showToast('Invalid video URL', 'error');
@@ -202,9 +207,16 @@ const DetailPage = {
    * Play video inline with instant fullscreen
    * IMPORTANT: Fullscreen is requested FIRST (while in click context)
    * then video loads async after we're already fullscreen
+   * @param {string} videoUrl - Google Drive video URL
+   * @param {number} seasonNum - Current season number (optional)
+   * @param {number} episodeIndex - Current episode index in the season (optional)
    */
-  playVideoInline(videoUrl) {
-    console.log('[DetailPage] Playing video inline:', videoUrl);
+  playVideoInline(videoUrl, seasonNum = 1, episodeIndex = 0) {
+    console.log('[DetailPage] Playing video inline:', videoUrl, 'S' + seasonNum + 'E' + (episodeIndex + 1));
+
+    // Store current episode info for next episode navigation
+    this.currentSeasonNum = seasonNum;
+    this.currentEpisodeIndex = episodeIndex;
 
     // Extract file ID from Google Drive URL
     const fileId = this.extractGoogleDriveFileId(videoUrl);
@@ -213,10 +225,49 @@ const DetailPage = {
       return;
     }
 
+    // Check if there's a next episode
+    const hasNextEpisode = this.hasNextEpisode(seasonNum, episodeIndex);
+
+    // Remove existing overlay if any
+    const existingOverlay = document.getElementById('inline-player-overlay');
+    if (existingOverlay) {
+      existingOverlay.remove();
+    }
+
     // 1. CREATE PLAYER OVERLAY (must exist before fullscreen)
     const overlay = document.createElement('div');
     overlay.id = 'inline-player-overlay';
     overlay.innerHTML = `
+      <style>
+        .next-episode-btn {
+          position: absolute;
+          bottom: 80px;
+          right: 20px;
+          padding: 12px 24px;
+          background: rgba(255, 107, 107, 0.9);
+          border: none;
+          border-radius: 25px;
+          color: white;
+          font-size: 14px;
+          font-weight: bold;
+          cursor: pointer;
+          z-index: 10;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          transition: opacity 0.3s ease, transform 0.3s ease;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .next-episode-btn:hover {
+          background: rgba(255, 107, 107, 1);
+          transform: scale(1.05);
+        }
+        .next-episode-btn.hidden {
+          opacity: 0;
+          pointer-events: none;
+          transform: scale(0.9);
+        }
+      </style>
       <div class="inline-player-container" id="inline-player-container">
         <div id="inline-loading" style="display:flex; justify-content:center; align-items:center; width:100%; height:100%; background:#000; color:#fff;">
           <div style="text-align:center;">
@@ -229,6 +280,11 @@ const DetailPage = {
           <iframe id="inline-video-iframe" style="width:100%; height:100%; border:none;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
           <!-- Small overlay to cover Google Drive's top-right icon -->
           <div style="position:absolute; top:0; right:0; width:50px; height:50px; background:#000; z-index:1;"></div>
+          ${hasNextEpisode ? `
+            <button class="next-episode-btn" id="next-episode-btn">
+              Next Episode ▶
+            </button>
+          ` : ''}
         </div>
       </div>
     `;
@@ -285,6 +341,33 @@ const DetailPage = {
       console.log('[DetailPage] Video loaded');
       loading.style.display = 'none';
       iframeWrapper.style.display = 'block';
+
+      // Setup Next Episode button if exists
+      const nextBtn = document.getElementById('next-episode-btn');
+      if (nextBtn) {
+        let hideTimeout;
+        const hideBtn = () => nextBtn.classList.add('hidden');
+        const showBtn = () => {
+          nextBtn.classList.remove('hidden');
+          clearTimeout(hideTimeout);
+          hideTimeout = setTimeout(hideBtn, 5000);
+        };
+
+        // Show initially, then auto-hide after 5 seconds
+        showBtn();
+
+        // Click to play next episode
+        nextBtn.addEventListener('click', () => {
+          this.playNextEpisode();
+        });
+
+        // Show on container tap
+        container.addEventListener('click', (e) => {
+          if (e.target.tagName !== 'IFRAME') {
+            showBtn();
+          }
+        });
+      }
     };
 
     // Fallback: show iframe after 3 seconds anyway
@@ -323,6 +406,73 @@ const DetailPage = {
     }
 
     return null;
+  },
+
+  /**
+   * Check if there's a next episode available
+   */
+  hasNextEpisode(seasonNum, episodeIndex) {
+    if (!this.currentItem || !this.currentItem.seasons) return false;
+
+    const season = this.currentItem.seasons.find(s => s.season === seasonNum);
+    if (!season) return false;
+
+    // Check if next episode exists in current season
+    if (episodeIndex + 1 < season.episodes.length) {
+      return true;
+    }
+
+    // Check if there's a next season with episodes
+    const nextSeason = this.currentItem.seasons.find(s => s.season === seasonNum + 1);
+    if (nextSeason && nextSeason.episodes && nextSeason.episodes.length > 0) {
+      return true;
+    }
+
+    return false;
+  },
+
+  /**
+   * Play the next episode
+   */
+  playNextEpisode() {
+    if (!this.currentItem || !this.currentItem.seasons) {
+      console.error('[DetailPage] No current item or seasons');
+      return;
+    }
+
+    const seasonNum = this.currentSeasonNum;
+    const episodeIndex = this.currentEpisodeIndex;
+
+    const season = this.currentItem.seasons.find(s => s.season === seasonNum);
+    if (!season) {
+      console.error('[DetailPage] Season not found:', seasonNum);
+      return;
+    }
+
+    let nextVideoUrl = null;
+    let nextSeasonNum = seasonNum;
+    let nextEpisodeIndex = episodeIndex + 1;
+
+    // Check if next episode exists in current season
+    if (nextEpisodeIndex < season.episodes.length) {
+      nextVideoUrl = season.episodes[nextEpisodeIndex].playerUrl;
+    } else {
+      // Try next season
+      const nextSeason = this.currentItem.seasons.find(s => s.season === seasonNum + 1);
+      if (nextSeason && nextSeason.episodes && nextSeason.episodes.length > 0) {
+        nextSeasonNum = seasonNum + 1;
+        nextEpisodeIndex = 0;
+        nextVideoUrl = nextSeason.episodes[0].playerUrl;
+      }
+    }
+
+    if (nextVideoUrl) {
+      console.log('[DetailPage] Playing next episode:', 'S' + nextSeasonNum + 'E' + (nextEpisodeIndex + 1));
+      Utils.showToast(`Playing Episode ${nextEpisodeIndex + 1}`, 'info');
+      this.playVideoInline(nextVideoUrl, nextSeasonNum, nextEpisodeIndex);
+    } else {
+      Utils.showToast('No more episodes', 'info');
+    }
   }
 };
 
