@@ -226,7 +226,7 @@ const DetailPage = {
         </div>
         <!-- Wrapper with overflow:hidden to clip the iframe's top-right icon -->
         <div id="iframe-wrapper" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; overflow:hidden;">
-          <iframe id="inline-video-iframe" style="position:absolute; top:-50px; right:-80px; width:calc(100% + 80px); height:calc(100% + 50px); border:none;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+          <iframe id="inline-video-iframe" style="position:absolute; top:0; left:0; width:calc(100% + 60px); height:100%; border:none;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
         </div>
       </div>
     `;
