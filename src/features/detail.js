@@ -224,9 +224,11 @@ const DetailPage = {
             <span>Loading video...</span>
           </div>
         </div>
-        <!-- Wrapper with overflow:hidden to clip the iframe's top-right icon -->
-        <div id="iframe-wrapper" style="display:none; position:absolute; top:0; left:0; right:0; bottom:0; overflow:hidden;">
-          <iframe id="inline-video-iframe" style="position:absolute; top:0; left:-30px; width:calc(100% + 60px); height:100%; border:none;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+        <!-- Video iframe at full size -->
+        <div id="iframe-wrapper" style="display:none; position:absolute; top:0; left:0; right:0; bottom:0;">
+          <iframe id="inline-video-iframe" style="width:100%; height:100%; border:none;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+          <!-- Small overlay to cover Google Drive's top-right icon -->
+          <div style="position:absolute; top:0; right:0; width:50px; height:50px; background:#000; z-index:1;"></div>
         </div>
       </div>
     `;
