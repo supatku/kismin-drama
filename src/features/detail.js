@@ -224,7 +224,10 @@ const DetailPage = {
             <span>Loading video...</span>
           </div>
         </div>
-        <iframe id="inline-video-iframe" style="display:none; width:100%; height:100%; border:none;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+        <!-- Wrapper with overflow:hidden to clip the iframe's top-right icon -->
+        <div id="iframe-wrapper" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; overflow:hidden;">
+          <iframe id="inline-video-iframe" style="position:absolute; top:-50px; right:-80px; width:calc(100% + 80px); height:calc(100% + 50px); border:none;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+        </div>
       </div>
     `;
     overlay.style.cssText = `
@@ -244,6 +247,7 @@ const DetailPage = {
       width: 100%;
       height: 100%;
       background: #000;
+      overflow: hidden;
     `;
 
     // 2. REQUEST FULLSCREEN IMMEDIATELY (still in click context!)
@@ -268,6 +272,7 @@ const DetailPage = {
 
     // 4. LOAD VIDEO ASYNC (already in fullscreen now)
     const iframe = document.getElementById('inline-video-iframe');
+    const iframeWrapper = document.getElementById('iframe-wrapper');
     const loading = document.getElementById('inline-loading');
     const embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
 
@@ -277,14 +282,14 @@ const DetailPage = {
     iframe.onload = () => {
       console.log('[DetailPage] Video loaded');
       loading.style.display = 'none';
-      iframe.style.display = 'block';
+      iframeWrapper.style.display = 'block';
     };
 
     // Fallback: show iframe after 3 seconds anyway
     setTimeout(() => {
       if (loading.style.display !== 'none') {
         loading.style.display = 'none';
-        iframe.style.display = 'block';
+        iframeWrapper.style.display = 'block';
       }
     }, 3000);
   },
