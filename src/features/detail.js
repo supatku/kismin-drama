@@ -207,7 +207,7 @@ const DetailPage = {
    * Play video inline with instant fullscreen
    * IMPORTANT: Fullscreen is requested FIRST (while in click context)
    * then video loads async after we're already fullscreen
-   * @param {string} videoUrl - Google Drive video URL
+   * @param {string} videoUrl - Google Drive video URL or external embed URL
    * @param {number} seasonNum - Current season number (optional)
    * @param {number} episodeIndex - Current episode index in the season (optional)
    */
@@ -218,10 +218,20 @@ const DetailPage = {
     this.currentSeasonNum = seasonNum;
     this.currentEpisodeIndex = episodeIndex;
 
-    // Extract file ID from Google Drive URL
+    // Determine embed URL based on video source type
+    let embedUrl;
     const fileId = this.extractGoogleDriveFileId(videoUrl);
-    if (!fileId) {
-      Utils.showToast('Invalid Google Drive URL', 'error');
+
+    if (fileId) {
+      // Google Drive URL
+      embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+      console.log('[DetailPage] Using Google Drive embed');
+    } else if (videoUrl.startsWith('http')) {
+      // External embed URL (use directly)
+      embedUrl = videoUrl;
+      console.log('[DetailPage] Using external embed URL');
+    } else {
+      Utils.showToast('Invalid video URL', 'error');
       return;
     }
 
@@ -334,7 +344,6 @@ const DetailPage = {
     const iframe = document.getElementById('inline-video-iframe');
     const iframeWrapper = document.getElementById('iframe-wrapper');
     const loading = document.getElementById('inline-loading');
-    const embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
 
     console.log('[DetailPage] Loading iframe:', embedUrl);
     iframe.src = embedUrl;
@@ -411,10 +420,14 @@ const DetailPage = {
   extractGoogleDriveFileId(url) {
     if (!url) return null;
 
+    // Only extract file ID if this is actually a Google Drive URL
+    const isGoogleDrive = url.includes('drive.google.com') || url.includes('docs.google.com');
+    if (!isGoogleDrive) return null;
+
     const patterns = [
-      /\/d\/([a-zA-Z0-9_-]+)/,
-      /[?&]id=([a-zA-Z0-9_-]+)/,
-      /^([a-zA-Z0-9_-]{20,})$/
+      /\/d\/([a-zA-Z0-9_-]+)/,           // /d/FILE_ID format
+      /[?&]id=([a-zA-Z0-9_-]+)/,         // ?id=FILE_ID format
+      /\/file\/d\/([a-zA-Z0-9_-]+)/      // /file/d/FILE_ID format
     ];
 
     for (const pattern of patterns) {
