@@ -1,11 +1,13 @@
 /**
  * Player Page
- * KISMIN Mode - Improved player for Rebahan API (direct URLs)
+ * KISMIN Mode - Google Drive iframe player with clean UI
  */
+
+import GoogleDrivePlayer from '../shared/gdrive-player.js';
 
 const PlayerPage = {
     player: null,
-    hls: null,
+    gdrivePlayer: null,
 
     /**
      * Convert Google Drive URL to embed format for video playback
@@ -58,16 +60,15 @@ const PlayerPage = {
             // Render player structure
             container.innerHTML = `
         <div class="player-container">
-          <div class="player-ambient" aria-hidden="true"></div>
           <button class="player-close" id="close-player" aria-label="Close player">✕</button>
           <div class="player-wrapper" id="player-wrapper">
-            ${this.getStatusMarkup('Loading video...')}
+            <div id="gdrive-player-container"></div>
           </div>
         </div>
       `;
 
             // Handle different types of player URLs
-            this.setupPlayer(streamUrl);
+            this.setupGoogleDrivePlayer(streamUrl);
 
             // Attach listeners
             this.attachListeners();
@@ -225,8 +226,40 @@ const PlayerPage = {
     },
 
     /**
-     * Create video player element
+     * Setup Google Drive iframe player
      */
+    async setupGoogleDrivePlayer(streamUrl) {
+        try {
+            const playerContainer = document.getElementById('gdrive-player-container');
+            
+            // Initialize Google Drive player
+            this.gdrivePlayer = new GoogleDrivePlayer(playerContainer, {
+                autoplay: false
+            });
+            
+            // Load the video with auto fullscreen (triggered by user click)
+            this.gdrivePlayer.loadVideo(streamUrl, true);
+            
+        } catch (error) {
+            console.error('Google Drive player setup error:', error);
+            this.showError('Failed to load video player');
+        }
+    },
+    
+    /**
+     * Show error message
+     */
+    showError(message) {
+        const wrapper = document.getElementById('player-wrapper');
+        wrapper.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--color-text); text-align: center; padding: var(--spacing-xl);">
+                <div style="font-size: 3rem; margin-bottom: var(--spacing-md);">⚠️</div>
+                <p style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-sm);">${message}</p>
+                <p style="color: var(--color-text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-lg);">Make sure the Google Drive file is shared as "Anyone with the link can view"</p>
+                <button class="btn btn--secondary" onclick="window.history.back()">Go Back</button>
+            </div>
+        `;
+    },
     createVideoPlayer(wrapper, streamUrl) {
         wrapper.innerHTML = this.getStatusMarkup('Loading video...');
         const video = document.createElement('video');
@@ -442,9 +475,9 @@ const PlayerPage = {
      * Clean up resources
      */
     destroy() {
-        if (this.hls) {
-            this.hls.destroy();
-            this.hls = null;
+        if (this.gdrivePlayer) {
+            this.gdrivePlayer.destroy();
+            this.gdrivePlayer = null;
         }
 
         if (this.player) {
