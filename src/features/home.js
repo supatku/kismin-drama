@@ -8,6 +8,7 @@ import Storage from '../core/storage.js';
 import Components from '../shared/components.js';
 import Utils from '../shared/utils.js';
 import CONFIG from '../core/config.js';
+import ManualContentAPI from '../core/manual_content.js';
 
 const HomePage = {
     currentCategory: 'trending',
@@ -31,6 +32,7 @@ const HomePage = {
             </button>
           `).join('')}
         </div>
+        ${Components.AdBanner()}
         <div id="drama-list" class="drama-grid">
           ${Components.LoadingSkeleton('drama', 6)}
         </div>
@@ -40,6 +42,9 @@ const HomePage = {
 
         // Load first category
         await this.loadCategory(this.currentCategory, 1, true);
+        
+        // Test manual content
+        this.testManualContent();
 
         // Attach event listeners
         this.attachListeners();
@@ -81,7 +86,18 @@ const HomePage = {
         } catch (error) {
             console.error('Error loading category:', error);
             if (reset) {
-                listContainer.innerHTML = Components.ErrorMessage('Failed to load content');
+                // Show manual content even if external API fails
+                try {
+                    const manualItems = await ManualContentAPI.fetchManualDramas();
+                    if (manualItems.length > 0) {
+                        listContainer.innerHTML = manualItems.map(item => Components.DramaCard(item)).join('');
+                    } else {
+                        listContainer.innerHTML = Components.ErrorMessage('Failed to load content');
+                    }
+                } catch (manualError) {
+                    console.error('Manual content also failed:', manualError);
+                    listContainer.innerHTML = Components.ErrorMessage('Failed to load content');
+                }
             }
         } finally {
             this.isFetching = false;
@@ -89,8 +105,22 @@ const HomePage = {
     },
 
     /**
-     * Attach event listeners
+     * Test manual content API
      */
+    async testManualContent() {
+        try {
+            console.log('[HomePage] Testing manual content API...');
+            const manualDramas = await ManualContentAPI.fetchManualDramas();
+            console.log('[HomePage] Manual dramas:', manualDramas);
+            
+            if (manualDramas.length > 0) {
+                const episodes = await ManualContentAPI.fetchManualEpisodes(manualDramas[0].id);
+                console.log('[HomePage] Episodes for first drama:', episodes);
+            }
+        } catch (error) {
+            console.error('[HomePage] Manual content test failed:', error);
+        }
+    },
     attachListeners() {
         const container = document.getElementById('app');
 

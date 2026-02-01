@@ -1,9 +1,10 @@
 /**
  * API Client
- * Real API integration with Rebahan API
+ * Real API integration with Rebahan API + Manual Content
  */
 
 import CONFIG from './config.js';
+import ManualContentAPI from './manual_content.js';
 
 /**
  * Mapper functions to normalize API responses
@@ -49,35 +50,74 @@ const Mappers = {
 
 const API = {
     /**
-     * Fetch items by category
+     * Fetch items by category (includes manual content)
      * @param {string} category
      * @param {number} page
      * @returns {Promise<Array>}
      */
     async fetchByCategory(category, page = 1) {
+        let manualItems = [];
+        let externalItems = [];
+        
         try {
+            // Always try to fetch manual content first
+            if (category === 'trending' || category === 'indonesian-drama' || category === 'kdrama') {
+                console.log('[API] Fetching manual content for category:', category);
+                manualItems = await ManualContentAPI.fetchManualDramas();
+                console.log('[API] Manual items loaded:', manualItems.length);
+            }
+        } catch (error) {
+            console.error('[API] Manual content error:', error);
+        }
+        
+        try {
+            // Try to fetch from external API
+            console.log('[API] Fetching external content for category:', category);
             const url = CONFIG.buildUrl(CONFIG.ENDPOINTS.CATEGORY, { category, page });
             const data = await this._fetch(url);
-
+            
             if (data.success && Array.isArray(data.items || data.data)) {
                 const items = data.items || data.data;
-                return items.map(item => Mappers.mapItem(item));
+                externalItems = items.map(item => Mappers.mapItem(item));
+                console.log('[API] External items loaded:', externalItems.length);
             }
-            return [];
         } catch (error) {
-            console.error('Error fetching category:', error);
-            throw error;
+            console.error('[API] External API error:', error);
         }
+        
+        // Always return manual content even if external API fails
+        const combinedItems = [...manualItems, ...externalItems];
+        console.log('[API] Total items returned:', combinedItems.length);
+        return combinedItems;
     },
 
     /**
-     * Get detail by detailPath (used as ID)
+     * Get detail by detailPath (handles both external and manual content)
      * @param {string} detailPath
      * @returns {Promise<Object>}
      */
     async getDetail(detailPath) {
         try {
             console.log(`[API] Getting detail for: ${detailPath}`);
+            
+            // Check if it's manual content
+            if (ManualContentAPI.isManualContent(detailPath)) {
+                const episodes = await ManualContentAPI.fetchManualEpisodes(detailPath);
+                const manualDramas = await ManualContentAPI.fetchManualDramas();
+                const drama = manualDramas.find(d => d.id === detailPath);
+                
+                if (drama) {
+                    return {
+                        ...drama,
+                        seasons: episodes.length > 0 ? [{
+                            season: 1,
+                            episodes: episodes
+                        }] : []
+                    };
+                }
+            }
+            
+            // Handle external API content
             const url = CONFIG.buildUrl(CONFIG.ENDPOINTS.DETAIL, { id: detailPath });
             const data = await this._fetch(url);
 

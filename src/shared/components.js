@@ -137,10 +137,25 @@ const Components = {
   },
 
   /**
-   * Create bottom navigation
-   * @param {string} activePage
+   * Create banner ad component
    * @returns {string} HTML string
    */
+  AdBanner() {
+    return `
+      <div class="adsterra-banner" style="text-align: center; margin: var(--spacing-lg) 0; padding: var(--spacing-sm);">
+        <script>
+          atOptions = {
+            'key' : '324b5e2dc7a78cb3fdff1672639aeb96',
+            'format' : 'iframe',
+            'height' : 50,
+            'width' : 320,
+            'params' : {}
+          };
+          document.write('<scr' + 'ipt type="text/javascript" src="https://pl28620764.effectivegatecpm.com/324b5e2dc7a78cb3fdff1672639aeb96/invoke.js"></scr' + 'ipt>');
+        </script>
+      </div>
+    `;
+  },
   BottomNav(activePage = 'home') {
     const pages = [
       { id: 'home', icon: '🏠', label: 'Home' },

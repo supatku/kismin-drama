@@ -125,6 +125,8 @@ const DetailPage = {
             ${Utils.escapeHtml(item.synopsis)}
           </p>
 
+          ${Components.AdBanner()}
+
           ${hasEpisodes ? `
             <h3 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md);">Episodes</h3>
             <div class="episode-list">
