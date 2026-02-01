@@ -22,6 +22,16 @@
 
   <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- Adsterra Popunder (delayed load to avoid interfering with video play) -->
+  <script>
+    // Delay popunder load by 10 seconds so initial clicks (like play video) aren't intercepted
+    setTimeout(function () {
+      var script = document.createElement('script');
+      script.src = 'https://pl28622402.effectivegatecpm.com/7f/50/c6/7f50c68ecf24e534b0521a161811e208.js';
+      document.head.appendChild(script);
+    }, 10000);
+  </script>
 </head>
 
 <body>
