@@ -280,8 +280,10 @@ const DetailPage = {
           <iframe id="inline-video-iframe" style="width:100%; height:100%; border:none;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
           <!-- Small overlay to cover Google Drive's top-right icon -->
           <div style="position:absolute; top:0; right:0; width:50px; height:50px; background:#000; z-index:1;"></div>
+          <!-- Transparent tap overlay to detect taps and sync with video UI -->
+          <div id="tap-overlay" style="position:absolute; top:0; left:0; right:0; bottom:0; z-index:2;"></div>
           ${hasNextEpisode ? `
-            <button class="next-episode-btn" id="next-episode-btn">
+            <button class="next-episode-btn hidden" id="next-episode-btn">
               Next Episode ▶
             </button>
           ` : ''}
@@ -342,32 +344,47 @@ const DetailPage = {
       loading.style.display = 'none';
       iframeWrapper.style.display = 'block';
 
-      // Setup Next Episode button if exists
+      // Setup tap overlay and Next Episode button
+      const tapOverlay = document.getElementById('tap-overlay');
       const nextBtn = document.getElementById('next-episode-btn');
+
+      let hideTimeout;
+      let controlsVisible = false;
+
+      const hideControls = () => {
+        controlsVisible = false;
+        // Re-enable tap overlay to catch next tap
+        tapOverlay.style.pointerEvents = 'auto';
+        // Hide Next Episode button
+        if (nextBtn) nextBtn.classList.add('hidden');
+      };
+
+      const showControls = () => {
+        controlsVisible = true;
+        // Disable tap overlay so video controls can be used
+        tapOverlay.style.pointerEvents = 'none';
+        // Show Next Episode button
+        if (nextBtn) nextBtn.classList.remove('hidden');
+        // Auto-hide after 5 seconds
+        clearTimeout(hideTimeout);
+        hideTimeout = setTimeout(hideControls, 5000);
+      };
+
+      // Tap overlay click - show controls (button + let video UI show)
+      tapOverlay.addEventListener('click', () => {
+        showControls();
+      });
+
+      // Next Episode button click
       if (nextBtn) {
-        let hideTimeout;
-        const hideBtn = () => nextBtn.classList.add('hidden');
-        const showBtn = () => {
-          nextBtn.classList.remove('hidden');
-          clearTimeout(hideTimeout);
-          hideTimeout = setTimeout(hideBtn, 5000);
-        };
-
-        // Show initially, then auto-hide after 5 seconds
-        showBtn();
-
-        // Click to play next episode
-        nextBtn.addEventListener('click', () => {
+        nextBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
           this.playNextEpisode();
         });
-
-        // Show on container tap
-        container.addEventListener('click', (e) => {
-          if (e.target.tagName !== 'IFRAME') {
-            showBtn();
-          }
-        });
       }
+
+      // Initially show controls briefly then hide
+      showControls();
     };
 
     // Fallback: show iframe after 3 seconds anyway
