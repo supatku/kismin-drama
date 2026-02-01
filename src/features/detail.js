@@ -244,6 +244,12 @@ const DetailPage = {
       existingOverlay.remove();
     }
 
+    // Hide ad banner during video playback
+    const adBanner = document.getElementById('ad-banner');
+    if (adBanner) {
+      adBanner.style.display = 'none';
+    }
+
     // 1. CREATE PLAYER OVERLAY (must exist before fullscreen)
     const overlay = document.createElement('div');
     overlay.id = 'inline-player-overlay';
@@ -406,14 +412,25 @@ const DetailPage = {
   },
 
   handleFullscreenChange() {
-    // If exited fullscreen, close the player
+    const adBanner = document.getElementById('ad-banner');
+
+    // If exited fullscreen, close the player and show ad banner
     if (!document.fullscreenElement && !document.webkitFullscreenElement) {
       const overlay = document.getElementById('inline-player-overlay');
       if (overlay) {
         overlay.remove();
       }
+      // Show ad banner when exiting fullscreen
+      if (adBanner) {
+        adBanner.style.display = 'flex';
+      }
       document.removeEventListener('fullscreenchange', DetailPage.handleFullscreenChange);
       document.removeEventListener('webkitfullscreenchange', DetailPage.handleFullscreenChange);
+    } else {
+      // Hide ad banner when entering fullscreen
+      if (adBanner) {
+        adBanner.style.display = 'none';
+      }
     }
   },
 
