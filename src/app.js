@@ -75,12 +75,15 @@ class App {
      * Handle route changes
      */
     async handleRoute() {
+        console.log('[App] handleRoute called');
         // Get current hash
         const hash = window.location.hash.slice(1) || 'home';
         const [route, ...params] = hash.split('/');
+        console.log('[App] Route:', route, 'Params:', params);
 
         // Find matching route handler
         const PageHandler = this.routes[route];
+        console.log('[App] PageHandler found:', !!PageHandler);
 
         if (!PageHandler) {
             console.error('Route not found:', route);
@@ -90,23 +93,28 @@ class App {
 
         // Destroy previous page if it has cleanup
         if (this.currentPage?.destroy) {
+            console.log('[App] Destroying previous page');
             this.currentPage.destroy();
         }
 
         // Initialize new page
         try {
+            console.log('[App] Initializing page:', route);
             this.currentPage = PageHandler;
 
             if (params.length > 0) {
                 // Route with parameters (e.g., detail/1, player/1-2)
+                console.log('[App] Calling init with params:', params[0]);
                 await PageHandler.init(params[0]);
             } else {
                 // Route without parameters
+                console.log('[App] Calling init without params');
                 await PageHandler.init();
             }
+            console.log('[App] Page initialized successfully');
         } catch (error) {
-            console.error('Error loading page:', error);
-            alert('Failed to load page');
+            console.error('[App] Error loading page:', error);
+            alert('Failed to load page: ' + error.message);
         }
     }
 }

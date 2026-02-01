@@ -6,7 +6,7 @@
 import API from '../core/api_client.js';
 import Storage from '../core/storage.js';
 import Components from '../shared/components.js';
-import Utils from '../shared/utils.js';
+import { showToast } from '../shared/utils.js';
 import CONFIG from '../core/config.js';
 import ManualContentAPI from '../core/manual_content.js';
 
@@ -19,7 +19,9 @@ const HomePage = {
      * Initialize home page
      */
     async init() {
+        console.log('[HomePage] Starting initialization...');
         const container = document.getElementById('app');
+        console.log('[HomePage] Container found:', !!container);
 
         // Render header, categories, and grid
         container.innerHTML = `
@@ -39,36 +41,47 @@ const HomePage = {
       </div>
       ${Components.BottomNav('home')}
     `;
+        console.log('[HomePage] HTML rendered successfully');
 
         // Load first category
+        console.log('[HomePage] Loading category:', this.currentCategory);
         await this.loadCategory(this.currentCategory, 1, true);
         
         // Test manual content
+        console.log('[HomePage] Testing manual content...');
         this.testManualContent();
 
         // Attach event listeners
+        console.log('[HomePage] Attaching listeners...');
         this.attachListeners();
+        console.log('[HomePage] Initialization complete!');
     },
 
     /**
      * Load items by category
      */
     async loadCategory(category, page = 1, reset = false) {
+        console.log('[HomePage] loadCategory called:', { category, page, reset, isFetching: this.isFetching });
         if (this.isFetching) return;
         this.isFetching = true;
 
         const listContainer = document.getElementById('drama-list');
+        console.log('[HomePage] List container found:', !!listContainer);
         if (reset) {
             listContainer.innerHTML = Components.LoadingSkeleton('drama', 6);
         }
 
         try {
+            console.log('[HomePage] Calling API.fetchByCategory...');
             const items = await API.fetchByCategory(category, page);
+            console.log('[HomePage] API response:', items);
 
             if (reset) {
                 if (items.length === 0) {
+                    console.log('[HomePage] No items found, showing empty state');
                     listContainer.innerHTML = Components.EmptyState('No items found', '🎬');
                 } else {
+                    console.log('[HomePage] Rendering', items.length, 'items');
                     listContainer.innerHTML = items.map(item => Components.DramaCard(item)).join('');
                 }
             } else {
@@ -82,25 +95,29 @@ const HomePage = {
 
             this.currentCategory = category;
             this.currentPage = page;
+            console.log('[HomePage] Category loaded successfully');
 
         } catch (error) {
-            console.error('Error loading category:', error);
+            console.error('[HomePage] Error loading category:', error);
             if (reset) {
                 // Show manual content even if external API fails
                 try {
+                    console.log('[HomePage] Trying manual content fallback...');
                     const manualItems = await ManualContentAPI.fetchManualDramas();
+                    console.log('[HomePage] Manual items:', manualItems);
                     if (manualItems.length > 0) {
                         listContainer.innerHTML = manualItems.map(item => Components.DramaCard(item)).join('');
                     } else {
                         listContainer.innerHTML = Components.ErrorMessage('Failed to load content');
                     }
                 } catch (manualError) {
-                    console.error('Manual content also failed:', manualError);
+                    console.error('[HomePage] Manual content also failed:', manualError);
                     listContainer.innerHTML = Components.ErrorMessage('Failed to load content');
                 }
             }
         } finally {
             this.isFetching = false;
+            console.log('[HomePage] loadCategory finished');
         }
     },
 
@@ -165,7 +182,7 @@ const HomePage = {
                 favoriteBtn.textContent = isFavorite ? '❤️' : '🤍';
 
                 // Show toast
-                Utils.showToast(
+                showToast(
                     isFavorite ? 'Added to watchlist' : 'Removed from watchlist',
                     'success'
                 );

@@ -127,3 +127,4 @@ if (typeof window !== 'undefined') {
 }
 
 export default Utils;
+export const { showToast, formatDuration, truncate, escapeHtml, debounce, parseQuery, buildQuery, formatNumber } = Utils;

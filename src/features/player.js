@@ -1,495 +1,183 @@
 /**
- * Player Page
- * KISMIN Mode - Google Drive iframe player with clean UI
+ * Video Player Page
+ * Handles video playback with Google Drive iframe embed (CORS-safe)
  */
 
-import GoogleDrivePlayer from '../shared/gdrive-player.js';
+import { showToast } from '../shared/utils.js';
 
 const PlayerPage = {
-    player: null,
-    gdrivePlayer: null,
+  init(encodedUrlParam) {
+    console.log('[PlayerPage] init() called with param:', encodedUrlParam);
+    this.render();
+    this.setupEventListeners();
+    this.loadVideoFromUrl(encodedUrlParam);
+  },
 
-    /**
-     * Convert Google Drive URL to embed format for video playback
-     * @param {string} url - Google Drive URL
-     * @returns {string} - Embed URL for iframe
-     */
-    convertDriveToEmbed(url) {
-        let fileId = null;
+  render() {
+    const app = document.getElementById('app');
+    app.innerHTML = `
+      <div class="player-container">
+        <button class="player-close" id="close-player">×</button>
+        
+        <div id="video-container" style="position:relative; width:100%; height:100%; background:#000;">
+          <div id="loading-overlay" style="display:flex; justify-content:center; align-items:center; position:absolute; top:0; left:0; width:100%; height:100%; background:#000; color:#fff; z-index:10;">
+            <div style="text-align:center;">
+              <div class="spinner" style="width:40px; height:40px; border:3px solid rgba(255,255,255,0.3); border-top:3px solid #ff6b6b; border-radius:50%; animation:spin 1s linear infinite; margin:0 auto 16px;"></div>
+              <span>Loading video...</span>
+            </div>
+          </div>
+          <iframe id="video-iframe" style="display:none; width:100%; height:100%; border:none;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+        </div>
+      </div>
+    `;
+  },
 
-        // Extract file ID from various formats
-        // Format: https://drive.google.com/uc?export=download&id=FILE_ID
-        if (url.includes('uc?') && url.includes('id=')) {
-            const match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-            if (match) fileId = match[1];
-        }
-        // Format: https://drive.google.com/file/d/FILE_ID/view
-        else if (url.includes('/file/d/')) {
-            const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-            if (match) fileId = match[1];
-        }
-        // Format: https://drive.google.com/open?id=FILE_ID
-        else if (url.includes('open?id=')) {
-            const match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-            if (match) fileId = match[1];
-        }
+  setupEventListeners() {
+    const closeBtn = document.getElementById('close-player');
+    closeBtn.addEventListener('click', () => {
+      this.cleanup();
+      window.history.back();
+    });
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      this.cleanup();
+    });
+  },
+
+  loadVideoFromUrl(encodedUrlParam) {
+    // Try to get encoded URL from parameter first (passed by app.js)
+    // If not available, parse from hash (fallback)
+    let encodedUrl = encodedUrlParam;
+
+    if (!encodedUrl) {
+      // Fallback: parse from URL hash - index 1, not 2!
+      // Hash format: #player/aHR0cHM6...
+      const hashParts = window.location.hash.split('/');
+      encodedUrl = hashParts[1]; // [0] is "#player", [1] is the encoded URL
+      console.log('[PlayerPage] Parsed encodedUrl from hash:', encodedUrl);
+    }
+
+    if (encodedUrl) {
+      try {
+        const decodedUrl = atob(encodedUrl);
+        console.log('[PlayerPage] Decoded URL:', decodedUrl);
+
+        const fileId = this.extractGoogleDriveFileId(decodedUrl);
 
         if (fileId) {
-            // Use preview format for video embedding
-            return `https://drive.google.com/file/d/${fileId}/preview`;
-        }
-
-        return url;
-    },
-
-    /**
-     * Initialize player page
-     * @param {string} encodedUrl - Base64 encoded stream/player URL
-     */
-    async init(encodedUrl) {
-        const container = document.getElementById('app');
-
-        try {
-            // Decode the URL
-            const streamUrl = atob(encodedUrl);
-
-            if (!streamUrl) {
-                throw new Error('Video URL missing');
-            }
-
-            // Render player structure
-            container.innerHTML = `
-        <div class="player-container">
-          <button class="player-close" id="close-player" aria-label="Close player">✕</button>
-          <div class="player-wrapper" id="player-wrapper">
-            <div id="gdrive-player-container"></div>
-          </div>
-        </div>
-      `;
-
-            // Handle different types of player URLs
-            this.setupGoogleDrivePlayer(streamUrl);
-
-            // Attach listeners
-            this.attachListeners();
-
-        } catch (error) {
-            console.error('Error loading video:', error);
-            alert('Failed to load video URL');
-            window.history.back();
-        }
-    },
-
-    /**
-     * Setup the player based on URL type
-     */
-    async setupPlayer(streamUrl) {
-        const wrapper = document.getElementById('player-wrapper');
-        const status = document.getElementById('player-status');
-        const statusTitle = status?.querySelector('.player-status__title');
-
-        console.log('[Player] Setting up player for:', streamUrl);
-
-        try {
-            // Handle Google Drive URLs - convert to embed format
-            if (streamUrl.includes('drive.google.com')) {
-                const embedUrl = this.convertDriveToEmbed(streamUrl);
-                console.log('[Player] Google Drive URL detected, using embed:', embedUrl);
-
-                wrapper.innerHTML = `
-                    <div class="player-iframe-container">
-                        <iframe 
-                            src="${embedUrl}" 
-                            style="width: 100%; height: 100%; border: none; background: #000;" 
-                            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-                            id="video-iframe"
-                        ></iframe>
-                        <div class="player-external-link" style="position: absolute; bottom: 20px; right: 20px; z-index: 100;">
-                            <button class="btn btn--secondary" onclick="window.open('${embedUrl}', '_blank')" style="opacity: 0.7; scale: 0.8;">
-                                ↗️ External Player
-                            </button>
-                        </div>
-                    </div>
-                `;
-
-                // Setup auto fullscreen for iframe
-                const iframe = document.getElementById('video-iframe');
-                this.setupIframeFullscreen(iframe);
-                return;
-            }
-
-            // If it's a Rebahan/Zeldvorik player URL, fetch the actual stream
-            if (streamUrl.includes('zeldvorik.ru') || streamUrl.includes('player.php')) {
-                if (statusTitle) {
-                    statusTitle.textContent = 'Getting stream URL...';
-                }
-
-                // Try to get the actual video URL
-                const actualUrl = await this.resolvePlayerUrl(streamUrl);
-                if (actualUrl) {
-                    this.createVideoPlayer(wrapper, actualUrl);
-                    return;
-                }
-            }
-
-            // If it's an iframe embed
-            if (streamUrl.includes('<iframe')) {
-                wrapper.innerHTML = streamUrl;
-                const iframe = wrapper.querySelector('iframe');
-                if (iframe) {
-                    iframe.style.width = '100%';
-                    iframe.style.height = '100%';
-                    iframe.style.border = 'none';
-                }
-                return;
-            }
-
-            // For Google Drive URLs, use iframe embed
-            if (streamUrl.includes('drive.google.com')) {
-                const fileId = this.extractGoogleDriveFileId(streamUrl);
-                if (fileId) {
-                    wrapper.innerHTML = `
-                        <iframe 
-                            src="https://drive.google.com/file/d/${fileId}/preview" 
-                            style="width: 100%; height: 100%; border: none;" 
-                            allowfullscreen
-                            allow="autoplay; encrypted-media; fullscreen"
-                        ></iframe>
-                    `;
-                    return;
-                }
-            }
-
-            // If it's a direct video URL
-            if (streamUrl.includes('.m3u8') || streamUrl.includes('.mp4')) {
-                this.createVideoPlayer(wrapper, streamUrl);
-                return;
-            }
-
-            // For web browser: Use iframe embed without "Open in Browser" button
-            if (this.isWebBrowser()) {
-                wrapper.innerHTML = `
-                    <iframe 
-                        src="${streamUrl}" 
-                        style="width: 100%; height: 100%; border: none;" 
-                        allowfullscreen
-                        allow="autoplay; encrypted-media; fullscreen"
-                        sandbox="allow-scripts allow-same-origin allow-presentation"
-                        id="video-iframe"
-                    ></iframe>
-                `;
-
-                // Setup auto fullscreen for iframe
-                const iframe = document.getElementById('video-iframe');
-                this.setupIframeFullscreen(iframe);
-                return;
-            }
-
-            // Fallback for mobile/Telegram: show external link
-            const showOpenInBrowser = this.isTelegramWebApp();
-            const openInBrowserMarkup = showOpenInBrowser
-                ? `
-                    <div style="margin-top: var(--spacing-md);">
-                        <button class="btn btn--primary" onclick="window.open('${streamUrl}', '_blank')">
-                            Open in Browser
-                        </button>
-                    </div>
-                `
-                : '';
-
-            wrapper.innerHTML = `
-                <div style="text-align: center; padding: var(--spacing-xl); color: var(--color-text-secondary);">
-                    <div style="font-size: 3rem; margin-bottom: var(--spacing-md);">🎬</div>
-                    <p style="margin-bottom: var(--spacing-lg);">Loading video player...</p>
-                    <iframe 
-                        src="${streamUrl}" 
-                        style="width: 100%; height: 400px; border: none; border-radius: var(--radius-md);" 
-                        allowfullscreen
-                        allow="autoplay; encrypted-media; fullscreen"
-                        sandbox="allow-scripts allow-same-origin allow-presentation"
-                    ></iframe>
-                    ${openInBrowserMarkup}
-                </div>
-            `;
-
-        } catch (error) {
-            console.error('Player setup error:', error);
-            wrapper.innerHTML = `
-                <div style="text-align: center; padding: var(--spacing-xl); color: var(--color-error);">
-                    <p>Failed to load video</p>
-                    <button class="btn btn--secondary" onclick="window.history.back()">
-                        Go Back
-                    </button>
-                </div>
-            `;
-        }
-    },
-
-    /**
-     * Setup Google Drive iframe player
-     */
-    async setupGoogleDrivePlayer(streamUrl) {
-        try {
-            const playerContainer = document.getElementById('gdrive-player-container');
-            
-            // Initialize Google Drive player
-            this.gdrivePlayer = new GoogleDrivePlayer(playerContainer, {
-                autoplay: false
-            });
-            
-            // Load the video with auto fullscreen (triggered by user click)
-            this.gdrivePlayer.loadVideo(streamUrl, true);
-            
-        } catch (error) {
-            console.error('Google Drive player setup error:', error);
-            this.showError('Failed to load video player');
-        }
-    },
-    
-    /**
-     * Show error message
-     */
-    showError(message) {
-        const wrapper = document.getElementById('player-wrapper');
-        wrapper.innerHTML = `
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--color-text); text-align: center; padding: var(--spacing-xl);">
-                <div style="font-size: 3rem; margin-bottom: var(--spacing-md);">⚠️</div>
-                <p style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-sm);">${message}</p>
-                <p style="color: var(--color-text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-lg);">Make sure the Google Drive file is shared as "Anyone with the link can view"</p>
-                <button class="btn btn--secondary" onclick="window.history.back()">Go Back</button>
-            </div>
-        `;
-    },
-    createVideoPlayer(wrapper, streamUrl) {
-        wrapper.innerHTML = this.getStatusMarkup('Loading video...');
-        const video = document.createElement('video');
-        video.id = 'video-player';
-        video.controls = true;
-        video.preload = 'metadata';
-        video.setAttribute(
-            'poster',
-            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Crect width='120' height='120' fill='%23000'/%3E%3Cpath d='M45 35 L85 60 L45 85 Z' fill='%23fff'/%3E%3C/svg%3E"
-        );
-        wrapper.prepend(video);
-        this.initVideoTag(streamUrl);
-    },
-
-    getStatusMarkup(message) {
-        return `
-            <div class="player-status" id="player-status">
-                <div class="player-status__icon">🎬</div>
-                <p class="player-status__title">${message}</p>
-                <p class="player-status__subtitle">Tap play to enter fullscreen</p>
-            </div>
-        `;
-    },
-
-    /**
-     * Extract Google Drive file ID from various URL formats
-     */
-    extractGoogleDriveFileId(url) {
-        // Format: https://drive.google.com/uc?export=download&id=FILE_ID
-        if (url.includes('uc?export=download&id=')) {
-            const match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-            return match ? match[1] : null;
-        }
-        
-        // Format: https://drive.google.com/file/d/FILE_ID/view
-        if (url.includes('/file/d/')) {
-            const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-            return match ? match[1] : null;
-        }
-        
-        return null;
-    },
-    isWebBrowser() {
-        return !this.isTelegramWebApp() &&
-            typeof window !== 'undefined' &&
-            window.location.protocol.startsWith('http');
-    },
-
-    /**
-     * Detect Telegram WebApp context (not just the script being present)
-     */
-    isTelegramWebApp() {
-        const telegramApp = window.Telegram?.WebApp;
-        if (!telegramApp) {
-            return false;
-        }
-        const hasInitData = typeof telegramApp.initData === 'string' && telegramApp.initData.length > 0;
-        const hasUser = Boolean(telegramApp.initDataUnsafe?.user);
-        return hasInitData || hasUser;
-    },
-
-    /**
-     * Setup auto fullscreen for iframe
-     */
-    setupIframeFullscreen(iframe) {
-        if (!iframe) return;
-
-        // Auto fullscreen on user interaction
-        const triggerFullscreen = () => {
-            if (iframe.requestFullscreen) {
-                iframe.requestFullscreen().catch(() => { });
-            } else if (iframe.webkitRequestFullscreen) {
-                iframe.webkitRequestFullscreen();
-            } else if (iframe.mozRequestFullScreen) {
-                iframe.mozRequestFullScreen();
-            }
-        };
-
-        // Trigger fullscreen on click
-        iframe.addEventListener('click', triggerFullscreen);
-
-        // Auto trigger after 2 seconds
-        setTimeout(() => {
-            triggerFullscreen();
-        }, 2000);
-    },
-    async resolvePlayerUrl(playerUrl) {
-        try {
-            // Use CORS proxy for Telegram WebView
-            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(playerUrl)}`;
-
-            const response = await fetch(proxyUrl);
-            const html = await response.text();
-
-            // Try to extract video URL from HTML
-            const videoMatch = html.match(/src=["'](.*?\.m3u8.*?)["']/i) ||
-                html.match(/src=["'](.*?\.mp4.*?)["']/i);
-
-            if (videoMatch) {
-                return videoMatch[1];
-            }
-
-            return null;
-        } catch (error) {
-            console.error('Failed to resolve player URL:', error);
-            return null;
-        }
-    },
-    /**
-     * Initialize HLS.js for video tag
-     */
-    async initVideoTag(streamUrl) {
-        const video = document.getElementById('video-player');
-        this.player = video;
-
-        // Check for HLS
-        if (streamUrl.includes('.m3u8')) {
-            if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = streamUrl;
-            } else if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-                this.hls = new Hls();
-                this.hls.loadSource(streamUrl);
-                this.hls.attachMedia(video);
-            } else {
-                video.src = streamUrl;
-            }
+          console.log('[PlayerPage] Loading video with file ID:', fileId);
+          this.playGoogleDriveVideo(fileId);
         } else {
-            video.src = streamUrl;
+          console.error('[PlayerPage] Could not extract file ID from URL:', decodedUrl);
+          showToast('Invalid video URL', 'error');
+          this.hideLoading();
         }
-
-        this.bindVideoEvents(video);
-    },
-
-    bindVideoEvents(video) {
-        const status = document.getElementById('player-status');
-        const showStatus = () => status?.classList.remove('is-hidden');
-        const hideStatus = () => status?.classList.add('is-hidden');
-
-        video.addEventListener('play', () => {
-            this.requestFullscreen(video);
-            hideStatus();
-        });
-        video.addEventListener('playing', hideStatus);
-        video.addEventListener('canplay', hideStatus);
-        video.addEventListener('waiting', showStatus);
-        video.addEventListener('stalled', showStatus);
-
-        // Auto fullscreen on first play for web browsers
-        if (this.isWebBrowser()) {
-            video.addEventListener('loadedmetadata', () => {
-                setTimeout(() => {
-                    this.requestFullscreen(video);
-                }, 1000);
-            });
-        }
-    },
-
-    requestFullscreen(video) {
-        const isFullscreen = document.fullscreenElement ||
-            document.webkitFullscreenElement ||
-            document.mozFullScreenElement ||
-            document.msFullscreenElement;
-
-        if (isFullscreen) {
-            return;
-        }
-
-        const request =
-            video.requestFullscreen ||
-            video.webkitRequestFullscreen ||
-            video.mozRequestFullScreen ||
-            video.msRequestFullscreen;
-
-        if (request) {
-            const result = request.call(video);
-            if (result?.catch) {
-                result.catch(() => { });
-            }
-            return;
-        }
-
-        if (typeof video.webkitEnterFullscreen === 'function') {
-            try {
-                video.webkitEnterFullscreen();
-            } catch (error) {
-                console.warn('Fullscreen request failed:', error);
-            }
-        }
-    },
-
-    /**
-     * Attach event listeners
-     */
-    attachListeners() {
-        const closeBtn = document.getElementById('close-player');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
-                this.destroy();
-                window.history.back();
-            });
-        }
-
-        if (this.isTelegramWebApp()) {
-            window.Telegram.WebApp.BackButton.show();
-            window.Telegram.WebApp.BackButton.onClick(() => {
-                this.destroy();
-                window.history.back();
-            });
-        }
-    },
-
-    /**
-     * Clean up resources
-     */
-    destroy() {
-        if (this.gdrivePlayer) {
-            this.gdrivePlayer.destroy();
-            this.gdrivePlayer = null;
-        }
-
-        if (this.player) {
-            this.player.pause();
-            this.player.src = '';
-            this.player = null;
-        }
-
-        if (window.Telegram?.WebApp) {
-            window.Telegram.WebApp.BackButton.hide();
-        }
+      } catch (error) {
+        console.error('[PlayerPage] Error decoding URL:', error);
+        showToast('Failed to load video', 'error');
+        this.hideLoading();
+      }
+    } else {
+      console.error('[PlayerPage] No encoded URL found');
+      showToast('No video URL provided', 'error');
+      this.hideLoading();
     }
+  },
+
+  extractGoogleDriveFileId(url) {
+    console.log('[PlayerPage] Extracting file ID from:', url);
+
+    const patterns = [
+      /\/d\/([a-zA-Z0-9_-]+)/,        // /d/FILE_ID/
+      /[?&]id=([a-zA-Z0-9_-]+)/,      // ?id=FILE_ID or &id=FILE_ID
+      /^([a-zA-Z0-9_-]{20,})$/        // Raw file ID (at least 20 chars)
+    ];
+
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) {
+        console.log('[PlayerPage] Found file ID:', match[1]);
+        return match[1];
+      }
+    }
+
+    return null;
+  },
+
+  playGoogleDriveVideo(fileId) {
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const iframe = document.getElementById('video-iframe');
+    const videoContainer = document.getElementById('video-container');
+
+    // Use Google Drive's preview embed URL (CORS-safe, uses Google's player)
+    const embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+
+    console.log('[PlayerPage] Loading iframe with URL:', embedUrl);
+
+    // Set iframe source
+    iframe.src = embedUrl;
+
+    // When iframe loads, hide the loading overlay and auto-fullscreen
+    iframe.onload = () => {
+      console.log('[PlayerPage] Iframe loaded successfully');
+      if (loadingOverlay) loadingOverlay.style.display = 'none';
+      iframe.style.display = 'block';
+
+      // Auto-fullscreen immediately
+      this.requestFullscreen(videoContainer);
+
+      showToast('Tap video to play', 'success');
+    };
+
+    iframe.onerror = () => {
+      console.error('[PlayerPage] Iframe failed to load');
+      this.hideLoading();
+      showToast('Failed to load video. Check if file is shared publicly.', 'error');
+    };
+
+    // Fallback: hide loading after 3 seconds if onload doesn't fire
+    setTimeout(() => {
+      if (loadingOverlay && loadingOverlay.style.display !== 'none') {
+        console.log('[PlayerPage] Timeout: hiding loading overlay');
+        loadingOverlay.style.display = 'none';
+        iframe.style.display = 'block';
+
+        // Also try fullscreen on timeout
+        this.requestFullscreen(videoContainer);
+      }
+    }, 3000);
+  },
+
+  requestFullscreen(element) {
+    try {
+      if (element.requestFullscreen) {
+        element.requestFullscreen();
+      } else if (element.webkitRequestFullscreen) {
+        element.webkitRequestFullscreen();
+      } else if (element.mozRequestFullScreen) {
+        element.mozRequestFullScreen();
+      } else if (element.msRequestFullscreen) {
+        element.msRequestFullscreen();
+      }
+      console.log('[PlayerPage] Fullscreen requested');
+    } catch (error) {
+      console.warn('[PlayerPage] Fullscreen failed (user gesture required):', error.message);
+    }
+  },
+
+  hideLoading() {
+    const loadingOverlay = document.getElementById('loading-overlay');
+    if (loadingOverlay) loadingOverlay.style.display = 'none';
+  },
+
+  cleanup() {
+    // Clear iframe
+    const iframe = document.getElementById('video-iframe');
+    if (iframe) {
+      iframe.src = '';
+    }
+  }
 };
 
 export default PlayerPage;

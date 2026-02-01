@@ -17,7 +17,7 @@ const DetailPage = {
    */
   async init(detailPath) {
     const container = document.getElementById('app');
-    
+
     // Validate detailPath
     if (!detailPath || detailPath.trim() === '') {
       console.error('[DetailPage] Invalid detailPath:', detailPath);
@@ -71,7 +71,7 @@ const DetailPage = {
         totalEpisodes: 0,
         id: decodedPath
       };
-      
+
       this.render(this.currentItem);
       this.attachListeners();
     }
@@ -175,22 +175,169 @@ const DetailPage = {
     const playBtn = document.getElementById('play-button');
     if (playBtn && this.currentItem && this.currentItem.playerUrl) {
       playBtn.addEventListener('click', () => {
-        const encodedUrl = btoa(this.currentItem.playerUrl);
-        window.location.hash = `#player/${encodedUrl}`;
+        this.playVideoInline(this.currentItem.playerUrl);
       });
     }
 
-    // Episode card clicks
+    // Episode card clicks - INLINE FULLSCREEN PLAYER
     const episodeList = document.querySelector('.episode-list');
     if (episodeList) {
       episodeList.addEventListener('click', (e) => {
         const epCard = e.target.closest('.episode-card');
         if (epCard) {
           const encodedUrl = epCard.dataset.url;
-          window.location.hash = `#player/${encodedUrl}`;
+          try {
+            const videoUrl = atob(encodedUrl);
+            this.playVideoInline(videoUrl);
+          } catch (err) {
+            console.error('[DetailPage] Invalid video URL:', err);
+            Utils.showToast('Invalid video URL', 'error');
+          }
         }
       });
     }
+  },
+
+  /**
+   * Play video inline with instant fullscreen
+   * IMPORTANT: Fullscreen is requested FIRST (while in click context)
+   * then video loads async after we're already fullscreen
+   */
+  playVideoInline(videoUrl) {
+    console.log('[DetailPage] Playing video inline:', videoUrl);
+
+    // Extract file ID from Google Drive URL
+    const fileId = this.extractGoogleDriveFileId(videoUrl);
+    if (!fileId) {
+      Utils.showToast('Invalid Google Drive URL', 'error');
+      return;
+    }
+
+    // 1. CREATE PLAYER OVERLAY (must exist before fullscreen)
+    const overlay = document.createElement('div');
+    overlay.id = 'inline-player-overlay';
+    overlay.innerHTML = `
+      <div class="inline-player-container" id="inline-player-container">
+        <button class="player-close" id="close-inline-player">×</button>
+        <div id="inline-loading" style="display:flex; justify-content:center; align-items:center; width:100%; height:100%; background:#000; color:#fff;">
+          <div style="text-align:center;">
+            <div style="width:40px; height:40px; border:3px solid rgba(255,255,255,0.3); border-top:3px solid #ff6b6b; border-radius:50%; animation:spin 1s linear infinite; margin:0 auto 16px;"></div>
+            <span>Loading video...</span>
+          </div>
+        </div>
+        <iframe id="inline-video-iframe" style="display:none; width:100%; height:100%; border:none;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+      </div>
+    `;
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      z-index: 9999;
+    `;
+    document.body.appendChild(overlay);
+
+    const container = document.getElementById('inline-player-container');
+    container.style.cssText = `
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #000;
+    `;
+
+    // 2. REQUEST FULLSCREEN IMMEDIATELY (still in click context!)
+    try {
+      if (container.requestFullscreen) {
+        container.requestFullscreen();
+      } else if (container.webkitRequestFullscreen) {
+        container.webkitRequestFullscreen();
+      } else if (container.mozRequestFullScreen) {
+        container.mozRequestFullScreen();
+      } else if (container.msRequestFullscreen) {
+        container.msRequestFullscreen();
+      }
+      console.log('[DetailPage] Fullscreen requested immediately');
+    } catch (err) {
+      console.warn('[DetailPage] Fullscreen failed:', err);
+    }
+
+    // 3. SETUP CLOSE BUTTON & FULLSCREEN EXIT HANDLER
+    const closeBtn = document.getElementById('close-inline-player');
+    closeBtn.addEventListener('click', () => this.closeInlinePlayer());
+
+    // Handle ESC key / fullscreen exit
+    document.addEventListener('fullscreenchange', this.handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', this.handleFullscreenChange);
+
+    // 4. LOAD VIDEO ASYNC (already in fullscreen now)
+    const iframe = document.getElementById('inline-video-iframe');
+    const loading = document.getElementById('inline-loading');
+    const embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+
+    console.log('[DetailPage] Loading iframe:', embedUrl);
+    iframe.src = embedUrl;
+
+    iframe.onload = () => {
+      console.log('[DetailPage] Video loaded');
+      loading.style.display = 'none';
+      iframe.style.display = 'block';
+    };
+
+    // Fallback: show iframe after 3 seconds anyway
+    setTimeout(() => {
+      if (loading.style.display !== 'none') {
+        loading.style.display = 'none';
+        iframe.style.display = 'block';
+      }
+    }, 3000);
+  },
+
+  handleFullscreenChange() {
+    // If exited fullscreen, close the player
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+      const overlay = document.getElementById('inline-player-overlay');
+      if (overlay) {
+        overlay.remove();
+      }
+      document.removeEventListener('fullscreenchange', DetailPage.handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', DetailPage.handleFullscreenChange);
+    }
+  },
+
+  closeInlinePlayer() {
+    // Exit fullscreen first
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    }
+
+    // Remove overlay
+    const overlay = document.getElementById('inline-player-overlay');
+    if (overlay) {
+      const iframe = overlay.querySelector('iframe');
+      if (iframe) iframe.src = '';
+      overlay.remove();
+    }
+  },
+
+  extractGoogleDriveFileId(url) {
+    if (!url) return null;
+
+    const patterns = [
+      /\/d\/([a-zA-Z0-9_-]+)/,
+      /[?&]id=([a-zA-Z0-9_-]+)/,
+      /^([a-zA-Z0-9_-]{20,})$/
+    ];
+
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) return match[1];
+    }
+
+    return null;
   }
 };
 
