@@ -70,6 +70,18 @@ function doGet(e) {
       return handleVip(e);
     }
 
+    // Domain Protection for Drama API
+    if (action === 'dramas' || action === 'episodes') {
+      if (!isAllowedOrigin(e)) {
+        return ContentService
+          .createTextOutput(JSON.stringify({
+            error: 'Unauthorized domain',
+            message: 'Content hanya bisa diakses dari drama.veoprompt.site'
+          }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
     // =====================
     // DRAMA API HANDLERS
     // =====================
