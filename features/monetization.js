@@ -10,7 +10,7 @@
 
 const Monetization = {
   // Google Apps Script Backend URL
-  GAS_URL: 'https://script.google.com/macros/s/AKfycbzEyMGIeRXzvu5dpZeBvRRPjBzwdkFPnub9IMeL1dfaSgBqeShEoP2sPIuz7cknQcjz/exec',
+  GAS_URL: 'https://script.google.com/macros/s/AKfycbwi6CE_2aVZR8BTF6ojzQ14XL4ek-rqF1-lK1FkBHa2FcrJVnc1PHX37IvrGM6mbWqd/exec',
 
   // Affiliate product catalog
   affiliateProducts: [
@@ -508,19 +508,26 @@ const Monetization = {
   },
 
   /**
-   * Navigate to affiliate link with tracking
+   * Navigate to affiliate link - Direct Facebook redirect (no backend)
    * @param {string} key - Affiliate product key
    */
   goAffiliate(key) {
-    const mid = window.currentMovieId || 'unknown';
-    const product = this.affiliateProducts.find(p => p.key === key);
-    const pos = product?.pos || 'unknown';
+    // Direct Facebook CPA links
+    const affiliateLinks = {
+      'headset1': 'https://web.facebook.com/share/p/1CPegGWMPj/',
+      'kuota1': 'https://web.facebook.com/share/p/1CUThKqVAS/',
+      'powerbank1': 'https://web.facebook.com/share/p/1KgALzvXvw/',
+      'snack1': 'https://web.facebook.com/share/p/1An7qVGGJ2/'
+    };
 
-    console.log('[Monetization] Affiliate click:', key, mid, pos);
+    const url = affiliateLinks[key];
 
-    // Redirect through GAS for tracking
-    const redirectUrl = `${this.GAS_URL}?go=${key}&mid=${encodeURIComponent(mid)}&pos=${pos}&ua=${encodeURIComponent(navigator.userAgent)}`;
-    window.open(redirectUrl, '_blank');
+    if (url) {
+      console.log('[Affiliate] Redirect:', key, url);
+      window.open(url, '_blank');
+    } else {
+      console.error('[Affiliate] Invalid key:', key);
+    }
   },
 
   /**

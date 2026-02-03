@@ -292,8 +292,8 @@ function generateVipKey(plan) {
 
   const days = plans[plan] || 7;
   const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
-  const key = `VIP - ${plan;
-} -${ randomPart; } `;
+  const key = `VIP - ${plan}
+} -${ randomPart } `;
 
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + days);
@@ -346,61 +346,19 @@ function setupSampleAffiliateLinks() {
   sheet.clear();
   sheet.appendRow(['key', 'url', 'active']);
 
-  // Facebook CPA Links - Ganti dengan link affiliate Shopee Anda yang berbeda jika perlu
-    const affiliateLinks = {
-        'headset1': 'https://web.facebook.com/share/p/1CPegGWMPj/',
-        'kuota1': 'https://web.facebook.com/share/p/1CUThKqVAS/',
-        'powerbank1': 'https://web.facebook.com/share/p/1KgALzvXvw/',
-        'snack1': 'https://web.facebook.com/share/p/1An7qVGGJ2/'
-    };
 
-    const url = affiliateLinks[key];
+  // Facebook CPA Links (sample data for reference)
+  const sampleLinks = [
+    ["headset1", "https://web.facebook.com/share/p/1CPegGWMPj/", true],
+    ["kuota1", "https://web.facebook.com/share/p/1CUThKqVAS/", true],
+    ["powerbank1", "https://web.facebook.com/share/p/1KgALzvXvw/", true],
+    ["snack1", "https://web.facebook.com/share/p/1An7qVGGJ2/", true]
+  ];
 
-    // Log click ke Google Sheets (optional - buat analytics)
-    try {
-        const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-        let clickSheet = ss.getSheetByName('affiliate_clicks');
+  sampleLinks.forEach(link => sheet.appendRow(link));
 
-        // Buat sheet baru kalau belum ada
-        if (!clickSheet) {
-            clickSheet = ss.insertSheet('affiliate_clicks');
-            clickSheet.appendRow(['Timestamp', 'Product', 'MovieID', 'Position', 'UserAgent']);
-        }
-
-        // Log click
-        clickSheet.appendRow([
-            new Date(),
-            key,
-            mid,
-            pos,
-            ua.substring(0, 200)
-        ]);
-    } catch (err) {
-        // Silent fail - tetap redirect meskipun logging gagal
-        Logger.log('Click logging failed: ' + err);
-    }
-
-    // Redirect ke Facebook CPA
-    if (url) {
-        return HtmlService.createHtmlOutput(`
-  < !DOCTYPE html >
-    <html>
-      <head>
-        <meta http-equiv="refresh" content="0; url=${url}">
-      </head>
-      <body>
-        <script>
-          window.top.location.href = "${url}";
-        </script>
-        <p>Redirecting to offer...</p>
-      </body>
-    </html>;
-`);
-    } else {
-        return ContentService.createTextOutput('Invalid affiliate key: ' + key);
-    }
+  Logger.log("Sample affiliate links created!");
 }
-
 
 function setupAffiliateClicksSheet() {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
