@@ -193,8 +193,8 @@ const HomePage = {
     /**
      * Load items by category
      */
-    async loadCategory(category, page = 1, reset = false) {
-        console.log('[HomePage] loadCategory called:', { category, page, reset, isFetching: this.isFetching });
+    async loadCategory(category, page = 1, reset = false, bypassCache = false) {
+        console.log('[HomePage] loadCategory called:', { category, page, reset, bypassCache, isFetching: this.isFetching });
         if (this.isFetching) return;
         this.isFetching = true;
 
@@ -206,13 +206,27 @@ const HomePage = {
 
         try {
             console.log('[HomePage] Calling API.fetchByCategory...');
-            const items = await API.fetchByCategory(category, page);
+
+            // World-class cache management: bypass cache if explicitly requested
+            let items;
+            if (bypassCache) {
+                items = await API._fetchByCategoryUncached(category, page);
+            } else {
+                items = await API.fetchByCategory(category, page);
+            }
             console.log('[HomePage] API response:', items);
 
             if (reset) {
                 if (items.length === 0) {
                     console.log('[HomePage] No items found, showing empty state');
-                    listContainer.innerHTML = Components.EmptyState('No items found', '🎬');
+                    listContainer.innerHTML = Components.EmptyState('Belum ada konten di kategori ini', '🎬');
+
+                    // Add a refresh button for empty state
+                    const refreshBtn = document.createElement('button');
+                    refreshBtn.className = 'btn btn--secondary mt-md';
+                    refreshBtn.textContent = 'Refresh Konten';
+                    refreshBtn.onclick = () => this.loadCategory(category, page, true, true);
+                    listContainer.querySelector('.empty-state').appendChild(refreshBtn);
                 } else {
                     console.log('[HomePage] Rendering', items.length, 'items');
                     listContainer.innerHTML = items.map(item => Components.DramaCard(item)).join('');

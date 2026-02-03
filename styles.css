@@ -97,6 +97,8 @@ button {
   cursor: pointer;
   border: none;
   background: none;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 a {
@@ -113,8 +115,7 @@ a {
 
 .page {
   padding: var(--spacing-md);
-  padding-top: calc(var(--spacing-xl) + 60px);
-  /* Space for header */
+  /* Removed fixed offset padding as header is now sticky/in-flow */
   animation: fadeIn var(--transition-base);
 }
 
@@ -132,7 +133,7 @@ a {
 
 /* ==================== Header ==================== */
 .app-header {
-  position: fixed;
+  position: sticky;
   top: 0;
   left: 0;
   right: 0;
@@ -944,6 +945,7 @@ card:hover .episode-card__play {
   outline: none;
   cursor: pointer;
   -webkit-appearance: none;
+  appearance: none;
 }
 
 .volume-slider::-webkit-slider-thumb {
@@ -1124,4 +1126,101 @@ card:hover .episode-card__play {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* ==================== Accessibility ==================== */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-primary);
+  color: white;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  z-index: 10000;
+  transition: top var(--transition-fast);
+}
+
+.skip-link:focus {
+  top: 10px;
+}
+
+/* ==================== SEO Hero Section ==================== */
+.seo-hero {
+  position: relative;
+  min-height: 280px;
+  background: #0a0a0a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px var(--spacing-md);
+  overflow: hidden;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255, 107, 107, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(78, 205, 196, 0.1) 0%, transparent 50%),
+    linear-gradient(135deg, #121212 0%, #050505 100%);
+  z-index: 1;
+}
+
+.seo-hero::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: linear-gradient(to top, var(--color-bg), transparent);
+  z-index: 2;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 3;
+  max-width: 800px;
+  animation: fadeIn var(--transition-slow);
+}
+
+.hero-title {
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: var(--spacing-md);
+  letter-spacing: -0.02em;
+}
+
+.text-accent {
+  color: var(--color-primary);
+}
+
+.hero-subtitle {
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--spacing-xl);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.badge {
+  display: inline-block;
+  background: rgba(255, 107, 107, 0.15);
+  color: var(--color-primary);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin: 0 4px;
+}
+
+@media (max-width: 600px) {
+  /* Media queries for hero if needed */
 }
