@@ -230,23 +230,31 @@ function handleAffiliate(e) {
 function handleVip(e) {
   const code = e.parameter.vip;
 
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-  const sheet = ss.getSheetByName('vip_keys');
-
-  if (!sheet) {
+  if (!code) {
     return ContentService
-      .createTextOutput(JSON.stringify({ ok: false, error: 'VIP system not configured' }))
+      .createTextOutput(JSON.stringify({ ok: false, error: 'No code provided' }))
       .setMimeType(ContentService.MimeType.JSON);
   }
 
-  const data = sheet.getDataRange().getValues();
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName('vip_keys');
 
-  // Search for VIP key (starting from row 2, skipping header)
-  for (let i = 1; i < data.length; i++) {
-    const vipKey = data[i][0];
-    const status = data[i][1];
-    const expiresAt = data[i][2];
-    const plan = data[i][3];
+  // Check if sheet exists
+  if (!sheet) {
+    return ContentService.createTextOutput(JSON.stringify({
+      ok: false,
+      error: 'VIP sheet not found. Create vip_keys tab.'
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const rows = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < rows.length; i++) {
+    // Columns: key | status | expires_at | plan
+    const vipKey = rows[i][0];
+    const status = rows[i][1];
+    const expiresAt = rows[i][2];
+    const plan = rows[i][3];
 
     if (vipKey === code && status === 'ACTIVE') {
       const expDate = new Date(expiresAt);
@@ -292,8 +300,7 @@ function generateVipKey(plan) {
 
   const days = plans[plan] || 7;
   const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
-  const key = `VIP - ${plan;
-} -${ randomPart; } `;
+  const key = `VIP - ${ plan; } -${ randomPart; } `;
 
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + days);
@@ -436,4 +443,4 @@ function setupAllMonetizationSheets() {
   setupAffiliateClicksSheet();
   setupVipKeysSheet();
   Logger.log('All monetization sheets created successfully!');
-}
+};
