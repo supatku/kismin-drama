@@ -7,6 +7,7 @@ import API from '../core/api_client.js';
 import Storage from '../core/storage.js';
 import Components from '../shared/components.js';
 import Utils from '../shared/utils.js';
+import Monetization from './monetization.js';
 
 const DetailPage = {
   currentItem: null,
@@ -56,6 +57,9 @@ const DetailPage = {
       // Attach listeners
       this.attachListeners();
 
+      // Initialize Monetization (Affiliate + VIP)
+      this.initMonetization(decodedPath);
+
     } catch (error) {
       console.error('[DetailPage] Error loading detail:', error);
       // Show user-friendly error instead of crashing
@@ -74,6 +78,21 @@ const DetailPage = {
 
       this.render(this.currentItem);
       this.attachListeners();
+      this.initMonetization(decodedPath);
+    }
+  },
+
+  /**
+   * Initialize Monetization module
+   * @param {string} movieId 
+   */
+  initMonetization(movieId) {
+    try {
+      Monetization.init();
+      Monetization.renderAffiliateOffers('affiliate-container', movieId);
+      Monetization.renderVipButton('vip-button-container');
+    } catch (error) {
+      console.warn('[DetailPage] Monetization init error:', error);
     }
   },
 
@@ -134,6 +153,10 @@ const DetailPage = {
           </p>
 
           ${Components.AdBanner()}
+
+          <!-- Monetization: Affiliate Offers -->
+          <div id="affiliate-container"></div>
+          <div id="vip-button-container" style="text-align: center;"></div>
 
           ${hasEpisodes ? `
             <h3 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md);">Episodes</h3>
