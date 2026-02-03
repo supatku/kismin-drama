@@ -6,7 +6,7 @@
 
 const ManualContentAPI = {
   // Google Apps Script Web App URL (with monetization)
-  SHEETS_API_URL: 'https://script.google.com/macros/s/AKfycbymjafHRvIBCE0prgH-iuf6xK2TyQ0g88VqUiSUc1p3lQnMzxpiBeQy5H1rz68tQkYx/exec',
+  SHEETS_API_URL: 'https://script.google.com/macros/s/AKfycbw1WZSNlWgAskEbmsOwwtFauEc0QbgU9FZSt3AMfBKaMCm2__rC-MgY1-WM9wmj1XTy/exec',
 
   /**
    * Get origin parameter for domain protection

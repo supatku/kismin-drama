@@ -10,7 +10,7 @@
 
 const Monetization = {
   // Google Apps Script Backend URL
-  GAS_URL: 'https://script.google.com/macros/s/AKfycbymjafHRvIBCE0prgH-iuf6xK2TyQ0g88VqUiSUc1p3lQnMzxpiBeQy5H1rz68tQkYx/exec',
+  GAS_URL: 'https://script.google.com/macros/s/AKfycbw1WZSNlWgAskEbmsOwwtFauEc0QbgU9FZSt3AMfBKaMCm2__rC-MgY1-WM9wmj1XTy/exec',
 
   // Affiliate product catalog
   affiliateProducts: [
@@ -262,6 +262,33 @@ const Monetization = {
         gap: 4px;
       }
 
+      /* VIP Popup Info Section */
+      .vip-popup__info {
+        background: rgba(255, 107, 107, 0.1);
+        border: 1px solid rgba(255, 107, 107, 0.3);
+        border-radius: 12px;
+        padding: 16px;
+        margin-top: 16px;
+      }
+
+      .vip-popup__saweria-btn {
+        display: block;
+        background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+        color: #fff;
+        text-decoration: none;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-weight: bold;
+        font-size: 0.95rem;
+        text-align: center;
+        transition: all 0.3s ease;
+      }
+
+      .vip-popup__saweria-btn:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+      }
+
       /* Ad Slot (for hiding) */
       .ad-slot {
         transition: opacity 0.3s ease;
@@ -367,34 +394,46 @@ const Monetization = {
       <div class="vip-popup-overlay" id="vip-popup-overlay" onclick="Monetization.closeVipPopup(event)">
         <div class="vip-popup" onclick="event.stopPropagation()">
           <div class="vip-popup__title">⭐ Aktifkan VIP</div>
-          <div class="vip-popup__subtitle">Masukkan kode VIP untuk menikmati Toktok tanpa iklan</div>
+          <div class="vip-popup__subtitle">Nikmati Toktok tanpa iklan dengan kode VIP</div>
           
           <div class="vip-popup__plans">
             <div class="vip-popup__plan">
               <strong>3 Hari</strong>
-              VIP-3D
+              Rp 5.000
             </div>
             <div class="vip-popup__plan">
               <strong>7 Hari</strong>
-              VIP-7D
+              Rp 10.000
             </div>
             <div class="vip-popup__plan">
               <strong>30 Hari</strong>
-              VIP-30D
+              Rp 25.000
             </div>
           </div>
 
-          <input 
-            type="text" 
-            class="vip-popup__input" 
-            id="vip-code-input" 
-            placeholder="VIP-7D-XXXXXX"
-            autocomplete="off"
-          />
-          
-          <button class="vip-popup__submit" id="vip-submit-btn" onclick="Monetization.redeemVip()">
-            Aktifkan VIP
-          </button>
+          <div class="vip-popup__info">
+            <p style="color: #aaa; font-size: 0.85rem; margin-bottom: 12px;">
+              Belum punya kode VIP? Dukung kami via Saweria dan dapatkan kode VIP via chat!
+            </p>
+            <a href="https://saweria.co/oghiezr" target="_blank" class="vip-popup__saweria-btn">
+              ☕ Dukung via Saweria
+            </a>
+          </div>
+
+          <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1);">
+            <p style="color: #888; font-size: 0.8rem; margin-bottom: 8px;">Sudah punya kode? Masukkan di bawah:</p>
+            <input 
+              type="text" 
+              class="vip-popup__input" 
+              id="vip-code-input" 
+              placeholder="VIP-7D-XXXXXX"
+              autocomplete="off"
+            />
+            
+            <button class="vip-popup__submit" id="vip-submit-btn" onclick="Monetization.redeemVip()">
+              Aktifkan VIP
+            </button>
+          </div>
         </div>
       </div>
     `;
