@@ -84,6 +84,10 @@ const DetailPage = {
     const isFavorite = Storage.isFavorite(item.id);
     const container = document.getElementById('app');
 
+    // Update Page Title for SEO
+    const baseTitle = 'Toktok - Nonton Drama Korea Sub Indo';
+    document.title = `${item.title} | ${baseTitle}`;
+
     // Check for seasons/episodes (TV series)
     const hasEpisodes = item.seasons && item.seasons.length > 0;
 

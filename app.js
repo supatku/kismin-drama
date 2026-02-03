@@ -111,11 +111,55 @@ class App {
                 console.log('[App] Calling init without params');
                 await PageHandler.init();
             }
+
+            // Update Page Title for SEO
+            this.updateTitle(route, params[0]);
+
             console.log('[App] Page initialized successfully');
         } catch (error) {
             console.error('[App] Error loading page:', error);
             alert('Failed to load page: ' + error.message);
+        } finally {
+            // Track page view in GA if available
+            if (window.gtag) {
+                window.gtag('event', 'page_view', {
+                    page_path: window.location.hash || '#home',
+                    page_title: document.title
+                });
+            }
         }
+    }
+
+    /**
+     * Update page title based on route
+     * @param {string} route 
+     * @param {string} param 
+     */
+    updateTitle(route, param) {
+        const baseTitle = 'Toktok - Nonton Drama Korea Sub Indo';
+        let pageTitle = '';
+
+        switch (route) {
+            case 'home':
+                pageTitle = 'Home';
+                break;
+            case 'watchlist':
+                pageTitle = 'Watchlist';
+                break;
+            case 'support':
+                pageTitle = 'Support & Donasi';
+                break;
+            case 'detail':
+                // Detail page handled separately in detail.js for specific titles
+                return;
+            case 'player':
+                pageTitle = 'Watching';
+                break;
+            default:
+                pageTitle = 'Nonton Drakor';
+        }
+
+        document.title = `${pageTitle} | ${baseTitle}`;
     }
 }
 

@@ -3,7 +3,14 @@
 
 User-agent: *
 Allow: /
+Allow: /index.html
+Allow: /app.js
+Allow: /styles.css
+Allow: /features/
+Allow: /core/
+Allow: /shared/
 Disallow: /src/
+Disallow: /kismin-drama/
 
 # Sitemap Location
 Sitemap: https://drama.veoprompt.site/sitemap.xml
