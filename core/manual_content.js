@@ -1,11 +1,19 @@
 /**
  * Manual Content Service
  * Integrates Google Sheets data with existing API
+ * Protected: Only works from allowed domains
  */
 
 const ManualContentAPI = {
-  // Your Google Apps Script Web App URL
-  SHEETS_API_URL: 'https://script.google.com/macros/s/AKfycbxVKDprSjPHtvmtqiFrP5htypGHwwtwyyIMB0sIq8dMgDvATlXDpLqVirfzP2qw91zQ/exec',
+  // Google Apps Script Web App URL (with monetization)
+  SHEETS_API_URL: 'https://script.google.com/macros/s/AKfycbymjafHRvIBCE0prgH-iuf6xK2TyQ0g88VqUiSUc1p3lQnMzxpiBeQy5H1rz68tQkYx/exec',
+
+  /**
+   * Get origin parameter for domain protection
+   */
+  getOriginParam() {
+    return `&origin=${encodeURIComponent(window.location.origin)}&referer=${encodeURIComponent(window.location.href)}`;
+  },
 
   /**
    * Convert Google Drive URL to direct image/thumbnail format
@@ -49,15 +57,15 @@ const ManualContentAPI = {
   async fetchManualDramas() {
     try {
       console.log('[ManualContent] Fetching dramas from:', this.SHEETS_API_URL);
-      const response = await fetch(`${this.SHEETS_API_URL}?action=dramas`);
-      
+      const response = await fetch(`${this.SHEETS_API_URL}?action=dramas${this.getOriginParam()}`);
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      
+
       const data = await response.json();
       console.log('[ManualContent] Raw drama data:', data);
-      
+
       if (!Array.isArray(data)) {
         console.error('[ManualContent] Expected array, got:', typeof data);
         return [];
@@ -74,7 +82,7 @@ const ManualContentAPI = {
         totalEpisodes: drama.total_episodes,
         isManual: true
       }));
-      
+
       console.log('[ManualContent] Mapped dramas:', mappedData);
       return mappedData;
     } catch (error) {
@@ -90,7 +98,7 @@ const ManualContentAPI = {
     try {
       // Remove 'manual_' prefix
       const cleanId = dramaId.replace('manual_', '');
-      const response = await fetch(`${this.SHEETS_API_URL}?action=episodes&drama_id=${cleanId}`);
+      const response = await fetch(`${this.SHEETS_API_URL}?action=episodes&drama_id=${cleanId}${this.getOriginParam()}`);
       const data = await response.json();
 
       return data.map(episode => ({

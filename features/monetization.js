@@ -9,36 +9,36 @@
  */
 
 const Monetization = {
-    // IMPORTANT: Replace with your deployed Google Apps Script URL
-    GAS_URL: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec',
+  // Google Apps Script Backend URL
+  GAS_URL: 'https://script.google.com/macros/s/AKfycbymjafHRvIBCE0prgH-iuf6xK2TyQ0g88VqUiSUc1p3lQnMzxpiBeQy5H1rz68tQkYx/exec',
 
-    // Affiliate product catalog
-    affiliateProducts: [
-        { key: 'headset1', icon: '🎧', label: 'Headset Nonton Nyaman', pos: 'below_player' },
-        { key: 'kuota1', icon: '📶', label: 'Paket Data Hemat Streaming', pos: 'below_player' },
-        { key: 'powerbank1', icon: '🔋', label: 'Powerbank Maraton Drama', pos: 'below_player' },
-        { key: 'snack1', icon: '🍿', label: 'Snack Nemenin Episode', pos: 'below_player' }
-    ],
+  // Affiliate product catalog
+  affiliateProducts: [
+    { key: 'headset1', icon: '🎧', label: 'Headset Nonton Nyaman', pos: 'below_player' },
+    { key: 'kuota1', icon: '📶', label: 'Paket Data Hemat Streaming', pos: 'below_player' },
+    { key: 'powerbank1', icon: '🔋', label: 'Powerbank Maraton Drama', pos: 'below_player' },
+    { key: 'snack1', icon: '🍿', label: 'Snack Nemenin Episode', pos: 'below_player' }
+  ],
 
-    /**
-     * Initialize monetization module
-     */
-    init() {
-        console.log('[Monetization] Initializing...');
-        this.checkVipStatus();
-        this.injectStyles();
-        console.log('[Monetization] Ready');
-    },
+  /**
+   * Initialize monetization module
+   */
+  init() {
+    console.log('[Monetization] Initializing...');
+    this.checkVipStatus();
+    this.injectStyles();
+    console.log('[Monetization] Ready');
+  },
 
-    /**
-     * Inject monetization styles
-     */
-    injectStyles() {
-        if (document.getElementById('monetization-styles')) return;
+  /**
+   * Inject monetization styles
+   */
+  injectStyles() {
+    if (document.getElementById('monetization-styles')) return;
 
-        const styles = document.createElement('style');
-        styles.id = 'monetization-styles';
-        styles.textContent = `
+    const styles = document.createElement('style');
+    styles.id = 'monetization-styles';
+    styles.textContent = `
       /* Affiliate Offers Section */
       .affiliate-offers {
         background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(255, 159, 67, 0.1));
@@ -290,25 +290,25 @@ const Monetization = {
         }
       }
     `;
-        document.head.appendChild(styles);
-    },
+    document.head.appendChild(styles);
+  },
 
-    /**
-     * Render affiliate offers section
-     * @param {string} containerId - Target container ID
-     * @param {string} movieId - Current movie/drama ID for tracking
-     */
-    renderAffiliateOffers(containerId, movieId = 'unknown') {
-        const container = document.getElementById(containerId);
-        if (!container) {
-            console.warn('[Monetization] Container not found:', containerId);
-            return;
-        }
+  /**
+   * Render affiliate offers section
+   * @param {string} containerId - Target container ID
+   * @param {string} movieId - Current movie/drama ID for tracking
+   */
+  renderAffiliateOffers(containerId, movieId = 'unknown') {
+    const container = document.getElementById(containerId);
+    if (!container) {
+      console.warn('[Monetization] Container not found:', containerId);
+      return;
+    }
 
-        // Store current movie ID for tracking
-        window.currentMovieId = movieId;
+    // Store current movie ID for tracking
+    window.currentMovieId = movieId;
 
-        const html = `
+    const html = `
       <div class="affiliate-offers" id="affiliate-section">
         <div class="affiliate-offers__title">
           ❤️ Support Toktok
@@ -324,46 +324,46 @@ const Monetization = {
       </div>
     `;
 
-        container.insertAdjacentHTML('beforeend', html);
-    },
+    container.insertAdjacentHTML('beforeend', html);
+  },
 
-    /**
-     * Render VIP button
-     * @param {string} containerId - Target container ID
-     */
-    renderVipButton(containerId) {
-        const container = document.getElementById(containerId);
-        if (!container) return;
+  /**
+   * Render VIP button
+   * @param {string} containerId - Target container ID
+   */
+  renderVipButton(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
 
-        const isVip = this.isVipActive();
-        const expiryDate = localStorage.getItem('vip_expiry');
+    const isVip = this.isVipActive();
+    const expiryDate = localStorage.getItem('vip_expiry');
 
-        let buttonHtml;
-        if (isVip) {
-            const expiry = new Date(expiryDate).toLocaleDateString('id-ID');
-            buttonHtml = `
+    let buttonHtml;
+    if (isVip) {
+      const expiry = new Date(expiryDate).toLocaleDateString('id-ID');
+      buttonHtml = `
         <button class="vip-button vip-button--active">
           ✅ VIP Aktif (s/d ${expiry})
         </button>
       `;
-        } else {
-            buttonHtml = `
+    } else {
+      buttonHtml = `
         <button class="vip-button" onclick="Monetization.openVipPopup()">
           ⭐ VIP Bebas Iklan
         </button>
       `;
-        }
+    }
 
-        container.insertAdjacentHTML('beforeend', buttonHtml);
-    },
+    container.insertAdjacentHTML('beforeend', buttonHtml);
+  },
 
-    /**
-     * Render VIP popup (hidden by default)
-     */
-    renderVipPopup() {
-        if (document.getElementById('vip-popup-overlay')) return;
+  /**
+   * Render VIP popup (hidden by default)
+   */
+  renderVipPopup() {
+    if (document.getElementById('vip-popup-overlay')) return;
 
-        const html = `
+    const html = `
       <div class="vip-popup-overlay" id="vip-popup-overlay" onclick="Monetization.closeVipPopup(event)">
         <div class="vip-popup" onclick="event.stopPropagation()">
           <div class="vip-popup__title">⭐ Aktifkan VIP</div>
@@ -399,173 +399,173 @@ const Monetization = {
       </div>
     `;
 
-        document.body.insertAdjacentHTML('beforeend', html);
-    },
+    document.body.insertAdjacentHTML('beforeend', html);
+  },
 
-    /**
-     * Navigate to affiliate link with tracking
-     * @param {string} key - Affiliate product key
-     */
-    goAffiliate(key) {
-        const mid = window.currentMovieId || 'unknown';
-        const product = this.affiliateProducts.find(p => p.key === key);
-        const pos = product?.pos || 'unknown';
+  /**
+   * Navigate to affiliate link with tracking
+   * @param {string} key - Affiliate product key
+   */
+  goAffiliate(key) {
+    const mid = window.currentMovieId || 'unknown';
+    const product = this.affiliateProducts.find(p => p.key === key);
+    const pos = product?.pos || 'unknown';
 
-        console.log('[Monetization] Affiliate click:', key, mid, pos);
+    console.log('[Monetization] Affiliate click:', key, mid, pos);
 
-        // Redirect through GAS for tracking
-        const redirectUrl = `${this.GAS_URL}?go=${key}&mid=${encodeURIComponent(mid)}&pos=${pos}&ua=${encodeURIComponent(navigator.userAgent)}`;
-        window.open(redirectUrl, '_blank');
-    },
+    // Redirect through GAS for tracking
+    const redirectUrl = `${this.GAS_URL}?go=${key}&mid=${encodeURIComponent(mid)}&pos=${pos}&ua=${encodeURIComponent(navigator.userAgent)}`;
+    window.open(redirectUrl, '_blank');
+  },
 
-    /**
-     * Open VIP popup
-     */
-    openVipPopup() {
-        this.renderVipPopup();
-        const overlay = document.getElementById('vip-popup-overlay');
-        if (overlay) {
-            overlay.classList.add('visible');
-            document.getElementById('vip-code-input')?.focus();
-        }
-    },
-
-    /**
-     * Close VIP popup
-     * @param {Event} event 
-     */
-    closeVipPopup(event) {
-        if (event && event.target.id !== 'vip-popup-overlay') return;
-        const overlay = document.getElementById('vip-popup-overlay');
-        if (overlay) {
-            overlay.classList.remove('visible');
-        }
-    },
-
-    /**
-     * Redeem VIP code
-     */
-    async redeemVip() {
-        const input = document.getElementById('vip-code-input');
-        const submitBtn = document.getElementById('vip-submit-btn');
-        const code = input?.value.trim();
-
-        if (!code) {
-            alert('Masukkan kode VIP');
-            return;
-        }
-
-        // Disable button during request
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Memvalidasi...';
-        }
-
-        try {
-            const response = await fetch(`${this.GAS_URL}?vip=${encodeURIComponent(code)}`);
-            const data = await response.json();
-
-            if (data.ok) {
-                // Store VIP status
-                localStorage.setItem('vip_code', code);
-                localStorage.setItem('vip_expiry', data.expires_at);
-
-                alert('🎉 VIP Aktif! Semua iklan dimatikan.');
-                this.hideAllAds();
-                this.closeVipPopup({ target: { id: 'vip-popup-overlay' } });
-
-                // Refresh page to update UI
-                location.reload();
-            } else {
-                alert('❌ Kode VIP salah atau sudah expired.');
-            }
-        } catch (error) {
-            console.error('[Monetization] VIP validation error:', error);
-            alert('Gagal memvalidasi kode. Coba lagi.');
-        } finally {
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Aktifkan VIP';
-            }
-        }
-    },
-
-    /**
-     * Check if VIP is currently active
-     * @returns {boolean}
-     */
-    isVipActive() {
-        const expiry = localStorage.getItem('vip_expiry');
-        if (!expiry) return false;
-
-        const expiryDate = new Date(expiry);
-        const now = new Date();
-
-        if (expiryDate > now) {
-            return true;
-        } else {
-            // Expired - clean up
-            localStorage.removeItem('vip_code');
-            localStorage.removeItem('vip_expiry');
-            return false;
-        }
-    },
-
-    /**
-     * Check VIP status on page load
-     */
-    checkVipStatus() {
-        if (this.isVipActive()) {
-            console.log('[Monetization] VIP is active, hiding ads');
-            this.hideAllAds();
-        }
-    },
-
-    /**
-     * Hide all ad slots
-     */
-    hideAllAds() {
-        // Hide elements with class 'ad-slot'
-        document.querySelectorAll('.ad-slot').forEach(el => {
-            el.classList.add('hidden');
-        });
-
-        // Hide Adsterra banners
-        document.querySelectorAll('.adsterra-banner').forEach(el => {
-            el.style.display = 'none';
-        });
-
-        // Hide fixed ad banner
-        const adBanner = document.getElementById('ad-banner');
-        if (adBanner) {
-            adBanner.style.display = 'none';
-        }
-
-        console.log('[Monetization] All ads hidden');
-    },
-
-    /**
-     * Show all ad slots (for non-VIP users)
-     */
-    showAllAds() {
-        document.querySelectorAll('.ad-slot').forEach(el => {
-            el.classList.remove('hidden');
-        });
-
-        document.querySelectorAll('.adsterra-banner').forEach(el => {
-            el.style.display = 'block';
-        });
-
-        const adBanner = document.getElementById('ad-banner');
-        if (adBanner) {
-            adBanner.style.display = 'flex';
-        }
+  /**
+   * Open VIP popup
+   */
+  openVipPopup() {
+    this.renderVipPopup();
+    const overlay = document.getElementById('vip-popup-overlay');
+    if (overlay) {
+      overlay.classList.add('visible');
+      document.getElementById('vip-code-input')?.focus();
     }
+  },
+
+  /**
+   * Close VIP popup
+   * @param {Event} event 
+   */
+  closeVipPopup(event) {
+    if (event && event.target.id !== 'vip-popup-overlay') return;
+    const overlay = document.getElementById('vip-popup-overlay');
+    if (overlay) {
+      overlay.classList.remove('visible');
+    }
+  },
+
+  /**
+   * Redeem VIP code
+   */
+  async redeemVip() {
+    const input = document.getElementById('vip-code-input');
+    const submitBtn = document.getElementById('vip-submit-btn');
+    const code = input?.value.trim();
+
+    if (!code) {
+      alert('Masukkan kode VIP');
+      return;
+    }
+
+    // Disable button during request
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Memvalidasi...';
+    }
+
+    try {
+      const response = await fetch(`${this.GAS_URL}?vip=${encodeURIComponent(code)}`);
+      const data = await response.json();
+
+      if (data.ok) {
+        // Store VIP status
+        localStorage.setItem('vip_code', code);
+        localStorage.setItem('vip_expiry', data.expires_at);
+
+        alert('🎉 VIP Aktif! Semua iklan dimatikan.');
+        this.hideAllAds();
+        this.closeVipPopup({ target: { id: 'vip-popup-overlay' } });
+
+        // Refresh page to update UI
+        location.reload();
+      } else {
+        alert('❌ Kode VIP salah atau sudah expired.');
+      }
+    } catch (error) {
+      console.error('[Monetization] VIP validation error:', error);
+      alert('Gagal memvalidasi kode. Coba lagi.');
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Aktifkan VIP';
+      }
+    }
+  },
+
+  /**
+   * Check if VIP is currently active
+   * @returns {boolean}
+   */
+  isVipActive() {
+    const expiry = localStorage.getItem('vip_expiry');
+    if (!expiry) return false;
+
+    const expiryDate = new Date(expiry);
+    const now = new Date();
+
+    if (expiryDate > now) {
+      return true;
+    } else {
+      // Expired - clean up
+      localStorage.removeItem('vip_code');
+      localStorage.removeItem('vip_expiry');
+      return false;
+    }
+  },
+
+  /**
+   * Check VIP status on page load
+   */
+  checkVipStatus() {
+    if (this.isVipActive()) {
+      console.log('[Monetization] VIP is active, hiding ads');
+      this.hideAllAds();
+    }
+  },
+
+  /**
+   * Hide all ad slots
+   */
+  hideAllAds() {
+    // Hide elements with class 'ad-slot'
+    document.querySelectorAll('.ad-slot').forEach(el => {
+      el.classList.add('hidden');
+    });
+
+    // Hide Adsterra banners
+    document.querySelectorAll('.adsterra-banner').forEach(el => {
+      el.style.display = 'none';
+    });
+
+    // Hide fixed ad banner
+    const adBanner = document.getElementById('ad-banner');
+    if (adBanner) {
+      adBanner.style.display = 'none';
+    }
+
+    console.log('[Monetization] All ads hidden');
+  },
+
+  /**
+   * Show all ad slots (for non-VIP users)
+   */
+  showAllAds() {
+    document.querySelectorAll('.ad-slot').forEach(el => {
+      el.classList.remove('hidden');
+    });
+
+    document.querySelectorAll('.adsterra-banner').forEach(el => {
+      el.style.display = 'block';
+    });
+
+    const adBanner = document.getElementById('ad-banner');
+    if (adBanner) {
+      adBanner.style.display = 'flex';
+    }
+  }
 };
 
 // Make available globally
 if (typeof window !== 'undefined') {
-    window.Monetization = Monetization;
+  window.Monetization = Monetization;
 }
 
 export default Monetization;
