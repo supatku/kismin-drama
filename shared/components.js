@@ -162,6 +162,55 @@ const Components = {
       </div>
     `;
   },
+
+  /**
+   * Create search bar component
+   * @param {string} placeholder - Placeholder text
+   * @param {string} value - Current search value
+   * @returns {string} HTML string
+   */
+  SearchBar(placeholder = 'Cari drama, anime, film...', value = '') {
+    return `
+      <div class="search-container">
+        <div class="search-wrapper">
+          <span class="search-icon">🔍</span>
+          <input 
+            type="text" 
+            id="search-input"
+            class="search-input" 
+            placeholder="${placeholder}"
+            value="${value}"
+            autocomplete="off"
+            aria-label="Search movies and dramas"
+          >
+          <button class="search-clear ${value ? '' : 'hidden'}" id="search-clear" aria-label="Clear search">
+            ✕
+          </button>
+        </div>
+      </div>
+    `;
+  },
+
+  /**
+   * Create search results header
+   * @param {string} query - Search query
+   * @param {number} count - Number of results
+   * @returns {string} HTML string
+   */
+  SearchResultsHeader(query, count) {
+    return `
+      <div class="search-results-header">
+        <span class="search-results-count">${count} hasil untuk "${query}"</span>
+        <button class="search-back-btn" id="search-back">← Kembali</button>
+      </div>
+    `;
+  },
+
+  /**
+   * Create bottom navigation
+   * @param {string} activePage - Current active page
+   * @returns {string} HTML string
+   */
   BottomNav(activePage = 'home') {
     const pages = [
       { id: 'home', icon: '🏠', label: 'Home' },
