@@ -9,6 +9,7 @@ import Utils from './utils.js';
 const Components = {
   /**
    * Create a drama card component
+   * Optimized with native lazy loading
    * @param {Object} drama
    * @returns {string} HTML string
    */
@@ -19,12 +20,17 @@ const Components = {
     return `
       <div class="drama-card" data-id="${item.id}">
         <div class="drama-card__thumbnail">
-          <img src="${item.thumbnail}" alt="${Utils.escapeHtml(item.title)}" loading="lazy">
+          <img 
+            src="${item.thumbnail}" 
+            alt="${Utils.escapeHtml(item.title)}" 
+            loading="lazy"
+            style="aspect-ratio: 2/3; width: 100%; height: 100%; object-fit: cover;"
+          >
           <div class="drama-card__rating">⭐ ${item.rating}</div>
         </div>
         <div class="drama-card__content">
           <h3 class="drama-card__title">${Utils.escapeHtml(item.title)}</h3>
-          <p class="drama-card__meta">${item.year} • ${Utils.escapeHtml(item.genre)}</p>
+          <p class="drama-card__meta">${item.year} • ${Utils.escapeHtml(item.genus)}</p>
         </div>
         <button class="drama-card__favorite" data-drama-id="${item.id}" aria-label="Toggle favorite">
           ${heartIcon}
@@ -130,7 +136,7 @@ const Components = {
   Header(title = 'Toktok', showBack = false) {
     return `
       <header class="app-header">
-        ${showBack ? '<button class="btn-back" onclick="history.back()">←</button>' : ''}
+        ${showBack ? '<button class="btn-back" onclick="history.back()" aria-label="Go back">←</button>' : ''}
         <h1 class="app-header__title">${Utils.escapeHtml(title)}</h1>
       </header>
     `;

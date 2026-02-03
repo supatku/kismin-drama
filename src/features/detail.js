@@ -93,7 +93,11 @@ const DetailPage = {
         <!-- Item Header -->
         <div style="margin-bottom: var(--spacing-xl);">
           <div style="position: relative; border-radius: var(--radius-lg); overflow: hidden; margin-bottom: var(--spacing-lg);">
-            <img src="${item.thumbnail}" alt="${Utils.escapeHtml(item.title)}" style="width: 100%; aspect-ratio: 16/9; object-fit: cover;">
+            <img 
+              src="${item.thumbnail}" 
+              alt="${Utils.escapeHtml(item.title)}" 
+              loading="eager"
+              style="width: 100%; aspect-ratio: 16/9; object-fit: cover;">
             <button class="drama-card__favorite" id="detail-favorite" style="top: var(--spacing-md); left: var(--spacing-md); background: rgba(0,0,0,0.6);">
               ${isFavorite ? '❤️' : '🤍'}
             </button>
@@ -293,7 +297,14 @@ const DetailPage = {
         </div>
         <!-- Video iframe at full size -->
         <div id="iframe-wrapper" style="display:none; position:absolute; top:0; left:0; right:0; bottom:0;">
-          <iframe id="inline-video-iframe" style="width:100%; height:100%; border:none;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+          <iframe 
+            id="inline-video-iframe" 
+            style="width:100%; height:100%; border:none;" 
+            allowfullscreen 
+            allow="autoplay; encrypted-media"
+            loading="eager"
+            importance="high"
+          ></iframe>
           <!-- Small overlay to cover Google Drive's top-right icon -->
           <div style="position:absolute; top:0; right:0; width:50px; height:50px; background:#000; z-index:1;"></div>
           <!-- Transparent tap overlay to detect taps and sync with video UI -->

@@ -23,6 +23,9 @@ const HomePage = {
         const container = document.getElementById('app');
         console.log('[HomePage] Container found:', !!container);
 
+        // Mark performance
+        window.PerformanceMonitor?.mark('home-init-start');
+
         // Render header, categories, and grid
         container.innerHTML = `
       ${Components.Header('Toktok', false)}
@@ -54,6 +57,11 @@ const HomePage = {
         // Attach event listeners
         console.log('[HomePage] Attaching listeners...');
         this.attachListeners();
+
+        // Mark performance
+        window.PerformanceMonitor?.mark('home-init-end');
+        window.PerformanceMonitor?.measure('home-init', 'home-init-start', 'home-init-end');
+
         console.log('[HomePage] Initialization complete!');
     },
 
@@ -83,6 +91,11 @@ const HomePage = {
                 } else {
                     console.log('[HomePage] Rendering', items.length, 'items');
                     listContainer.innerHTML = items.map(item => Components.DramaCard(item)).join('');
+
+                    // Re-observe lazy images after rendering
+                    if (window.LazyLoader) {
+                        setTimeout(() => window.LazyLoader.observeAll(listContainer), 50);
+                    }
                 }
             } else {
                 // Append items if we ever implement infinite scroll
@@ -90,6 +103,11 @@ const HomePage = {
                 tempDiv.innerHTML = items.map(item => Components.DramaCard(item)).join('');
                 while (tempDiv.firstChild) {
                     listContainer.appendChild(tempDiv.firstChild);
+                }
+
+                // Re-observe lazy images for appended items
+                if (window.LazyLoader) {
+                    setTimeout(() => window.LazyLoader.observeAll(listContainer), 50);
                 }
             }
 
@@ -107,6 +125,11 @@ const HomePage = {
                     console.log('[HomePage] Manual items:', manualItems);
                     if (manualItems.length > 0) {
                         listContainer.innerHTML = manualItems.map(item => Components.DramaCard(item)).join('');
+
+                        // Re-observe lazy images for fallback content
+                        if (window.LazyLoader) {
+                            setTimeout(() => window.LazyLoader.observeAll(listContainer), 50);
+                        }
                     } else {
                         listContainer.innerHTML = Components.ErrorMessage('Failed to load content');
                     }

@@ -14,8 +14,16 @@
 
   <title>Toktok</title>
 
+  <!-- Resource Hints for Performance -->
+  <link rel="preconnect" href="https://zeldvorik.ru" crossorigin>
+  <link rel="dns-prefetch" href="https://drive.google.com">
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link rel="preload" href="styles.css" as="style">
+  <link rel="preload" href="app.js" as="script">
+
   <!-- Styles -->
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="shared/performance.css">
 
   <!-- HLS.js for video streaming -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.7/dist/hls.min.js"></script>
@@ -28,6 +36,7 @@
     // Delay popunder load by 10 seconds so initial clicks (like play video) aren't intercepted
     setTimeout(function () {
       var script = document.createElement('script');
+      script.async = true;
       script.src = 'https://pl28622402.effectivegatecpm.com/7f/50/c6/7f50c68ecf24e534b0521a161811e208.js';
       document.head.appendChild(script);
     }, 10000);

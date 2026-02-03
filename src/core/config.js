@@ -73,6 +73,22 @@ export const CONFIG = {
     AUTO_PLAY: false, // Telegram WebView requires tap-to-play
     CONTROLS: true,
     PRELOAD: 'metadata'
+  },
+
+  // Performance Configuration
+  PERFORMANCE: {
+    CACHE_TTL: 15 * 60 * 1000, // 15 minutes
+    CACHE_TTL_DETAIL: 30 * 60 * 1000, // 30 minutes for detail pages
+    CACHE_TTL_SEARCH: 5 * 60 * 1000, // 5 minutes for search
+    ENABLE_LAZY_LOADING: true,
+    ENABLE_SERVICE_WORKER: true,
+    ENABLE_CACHE: true,
+    IMAGE_QUALITY: 'auto',
+    ENABLE_WEBP: true,
+    INFINITE_SCROLL_THRESHOLD: 0.8,
+    PRELOAD_NEXT_PAGE: true,
+    PREFETCH_ON_HOVER: true,
+    MAX_CACHE_SIZE: 50 // Maximum items in memory cache
   }
 };
 

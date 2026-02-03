@@ -1,10 +1,12 @@
 /**
  * API Client
  * Real API integration with Rebahan API + Manual Content
+ * Enhanced with intelligent caching for optimal performance
  */
 
 import CONFIG from './config.js';
 import ManualContentAPI from './manual_content.js';
+import CacheManager from './cache_manager.js';
 
 /**
  * Mapper functions to normalize API responses
@@ -51,14 +53,33 @@ const Mappers = {
 const API = {
     /**
      * Fetch items by category (includes manual content)
+     * Enhanced with caching for optimal performance
      * @param {string} category
      * @param {number} page
      * @returns {Promise<Array>}
      */
     async fetchByCategory(category, page = 1) {
+        if (!CONFIG.PERFORMANCE.ENABLE_CACHE) {
+            return this._fetchByCategoryUncached(category, page);
+        }
+
+        const cacheKey = `cache:category:${category}:${page}`;
+
+        return CacheManager.fetchWithCache(
+            cacheKey,
+            () => this._fetchByCategoryUncached(category, page),
+            CONFIG.PERFORMANCE.CACHE_TTL
+        );
+    },
+
+    /**
+     * Internal uncached fetch by category
+     * @private
+     */
+    async _fetchByCategoryUncached(category, page = 1) {
         let manualItems = [];
         let externalItems = [];
-        
+
         try {
             // Always try to fetch manual content first
             if (category === 'trending' || category === 'indonesian-drama' || category === 'kdrama') {
@@ -69,13 +90,13 @@ const API = {
         } catch (error) {
             console.error('[API] Manual content error:', error);
         }
-        
+
         try {
             // Try to fetch from external API
             console.log('[API] Fetching external content for category:', category);
             const url = CONFIG.buildUrl(CONFIG.ENDPOINTS.CATEGORY, { category, page });
             const data = await this._fetch(url);
-            
+
             if (data.success && Array.isArray(data.items || data.data)) {
                 const items = data.items || data.data;
                 externalItems = items.map(item => Mappers.mapItem(item));
@@ -84,7 +105,7 @@ const API = {
         } catch (error) {
             console.error('[API] External API error:', error);
         }
-        
+
         // Always return manual content even if external API fails
         const combinedItems = [...manualItems, ...externalItems];
         console.log('[API] Total items returned:', combinedItems.length);
@@ -93,19 +114,38 @@ const API = {
 
     /**
      * Get detail by detailPath (handles both external and manual content)
+     * Enhanced with caching for faster repeat visits
      * @param {string} detailPath
      * @returns {Promise<Object>}
      */
     async getDetail(detailPath) {
+        if (!CONFIG.PERFORMANCE.ENABLE_CACHE) {
+            return this._getDetailUncached(detailPath);
+        }
+
+        const cacheKey = `cache:detail:${detailPath}`;
+
+        return CacheManager.fetchWithCache(
+            cacheKey,
+            () => this._getDetailUncached(detailPath),
+            CONFIG.PERFORMANCE.CACHE_TTL_DETAIL // Longer TTL for detail pages
+        );
+    },
+
+    /**
+     * Internal uncached get detail
+     * @private
+     */
+    async _getDetailUncached(detailPath) {
         try {
             console.log(`[API] Getting detail for: ${detailPath}`);
-            
+
             // Check if it's manual content
             if (ManualContentAPI.isManualContent(detailPath)) {
                 const episodes = await ManualContentAPI.fetchManualEpisodes(detailPath);
                 const manualDramas = await ManualContentAPI.fetchManualDramas();
                 const drama = manualDramas.find(d => d.id === detailPath);
-                
+
                 if (drama) {
                     return {
                         ...drama,
@@ -116,7 +156,7 @@ const API = {
                     };
                 }
             }
-            
+
             // Handle external API content
             const url = CONFIG.buildUrl(CONFIG.ENDPOINTS.DETAIL, { id: detailPath });
             const data = await this._fetch(url);
@@ -127,7 +167,7 @@ const API = {
                 const itemData = data.item || data.data;
                 return Mappers.mapDetail(itemData);
             }
-            
+
             // Fallback: return mock data if API fails
             console.warn(`[API] No data found, using fallback for: ${detailPath}`);
             return {
@@ -160,6 +200,7 @@ const API = {
 
     /**
      * Search content
+     * Enhanced with caching (shorter TTL for search)
      * @param {string} query
      * @returns {Promise<Array>}
      */
@@ -167,18 +208,36 @@ const API = {
         try {
             if (!query || query.trim().length === 0) return [];
 
-            const url = CONFIG.buildUrl(CONFIG.ENDPOINTS.SEARCH, { query });
-            const data = await this._fetch(url);
-
-            if (data.success && Array.isArray(data.items || data.data)) {
-                const items = data.items || data.data;
-                return items.map(item => Mappers.mapItem(item));
+            if (!CONFIG.PERFORMANCE.ENABLE_CACHE) {
+                return this._searchUncached(query);
             }
-            return [];
+
+            const cacheKey = `cache:search:${query.toLowerCase()}`;
+
+            return CacheManager.fetchWithCache(
+                cacheKey,
+                () => this._searchUncached(query),
+                CONFIG.PERFORMANCE.CACHE_TTL_SEARCH // Shorter TTL for search
+            );
         } catch (error) {
             console.error('Error searching:', error);
             return [];
         }
+    },
+
+    /**
+     * Internal uncached search
+     * @private
+     */
+    async _searchUncached(query) {
+        const url = CONFIG.buildUrl(CONFIG.ENDPOINTS.SEARCH, { query });
+        const data = await this._fetch(url);
+
+        if (data.success && Array.isArray(data.items || data.data)) {
+            const items = data.items || data.data;
+            return items.map(item => Mappers.mapItem(item));
+        }
+        return [];
     },
 
     /**
