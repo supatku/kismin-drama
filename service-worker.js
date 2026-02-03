@@ -10,22 +10,22 @@ const IMAGE_CACHE = 'toktok-images-v1';
 
 // Assets to cache immediately on install
 const STATIC_ASSETS = [
-    '/src/index.html',
-    '/src/styles.css',
-    '/src/app.js',
-    '/src/core/config.js',
-    '/src/core/api_client.js',
-    '/src/core/storage.js',
-    '/src/core/cache_manager.js',
-    '/src/core/performance_monitor.js',
-    '/src/shared/components.js',
-    '/src/shared/utils.js',
-    '/src/shared/lazy_loader.js',
-    '/src/features/home.js',
-    '/src/features/detail.js',
-    '/src/features/player.js',
-    '/src/features/watchlist.js',
-    '/src/features/support.js'
+    '/index.html',
+    '/styles.css',
+    '/app.js',
+    '/core/config.js',
+    '/core/api_client.js',
+    '/core/storage.js',
+    '/core/cache_manager.js',
+    '/core/performance_monitor.js',
+    '/shared/components.js',
+    '/shared/utils.js',
+    '/shared/lazy_loader.js',
+    '/features/home.js',
+    '/features/detail.js',
+    '/features/player.js',
+    '/features/watchlist.js',
+    '/features/support.js'
 ];
 
 // Install event - cache static assets
