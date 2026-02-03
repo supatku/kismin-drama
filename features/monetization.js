@@ -10,7 +10,7 @@
 
 const Monetization = {
   // Google Apps Script Backend URL
-  GAS_URL: 'https://script.google.com/macros/s/AKfycbw1WZSNlWgAskEbmsOwwtFauEc0QbgU9FZSt3AMfBKaMCm2__rC-MgY1-WM9wmj1XTy/exec',
+  GAS_URL: 'https://script.google.com/macros/s/AKfycbxXgC6ATnTFAZ7quiNA4zSnev3DyfTOkmEWt7_AoOy4-6o1DAtayeAlKHBBmEJDfZE/exec',
 
   // Affiliate product catalog
   affiliateProducts: [
