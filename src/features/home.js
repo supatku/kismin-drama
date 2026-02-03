@@ -25,7 +25,7 @@ const HomePage = {
 
         // Render header, categories, and grid
         container.innerHTML = `
-      ${Components.Header('KISMIN Drama', false)}
+      ${Components.Header('Toktok', false)}
       <div class="page">
         <div class="category-tabs" id="category-tabs">
           ${CONFIG.CATEGORIES.map(cat => `
@@ -46,7 +46,7 @@ const HomePage = {
         // Load first category
         console.log('[HomePage] Loading category:', this.currentCategory);
         await this.loadCategory(this.currentCategory, 1, true);
-        
+
         // Test manual content
         console.log('[HomePage] Testing manual content...');
         this.testManualContent();
@@ -129,7 +129,7 @@ const HomePage = {
             console.log('[HomePage] Testing manual content API...');
             const manualDramas = await ManualContentAPI.fetchManualDramas();
             console.log('[HomePage] Manual dramas:', manualDramas);
-            
+
             if (manualDramas.length > 0) {
                 const episodes = await ManualContentAPI.fetchManualEpisodes(manualDramas[0].id);
                 console.log('[HomePage] Episodes for first drama:', episodes);

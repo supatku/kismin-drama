@@ -31,7 +31,7 @@ class App {
         // Listen for hash changes
         window.addEventListener('hashchange', () => this.handleRoute());
 
-        console.log('KISMIN Drama App initialized');
+        console.log('Toktok App initialized');
     }
 
     /**

@@ -9,14 +9,14 @@ import Components from '../shared/components.js';
 import Utils from '../shared/utils.js';
 
 const SupportPage = {
-    /**
-     * Initialize support page
-     */
-    init() {
-        const container = document.getElementById('app');
-        const isSupporter = Storage.isSupporterUnlocked();
+  /**
+   * Initialize support page
+   */
+  init() {
+    const container = document.getElementById('app');
+    const isSupporter = Storage.isSupporterUnlocked();
 
-        container.innerHTML = `
+    container.innerHTML = `
       ${Components.Header('Support Dev', false)}
       <div class="page">
         <div style="max-width: 600px; margin: 0 auto;">
@@ -43,9 +43,35 @@ const SupportPage = {
               ☕ Support via Saweria
             </a>
             
-            <a href="${CONFIG.SUPPORT_LINKS.TRAKTEER}" target="_blank" rel="noopener" class="btn btn--primary btn--full">
+            <a href="${CONFIG.SUPPORT_LINKS.TRAKTEER}" target="_blank" rel="noopener" class="btn btn--primary btn--full mb-md">
               🎁 Support via Trakteer
             </a>
+
+            <a href="${CONFIG.SUPPORT_LINKS.LYNKID}" target="_blank" rel="noopener" class="btn btn--secondary btn--full">
+              🔗 Visit Lynk.id
+            </a>
+          </div>
+
+          <!-- Social Media Links -->
+          <div style="margin-bottom: var(--spacing-2xl);">
+            <h3 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md);">
+              📱 Follow Us
+            </h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+              <a href="${CONFIG.SOCMED_LINKS.TIKTOK}" target="_blank" rel="noopener" class="btn btn--secondary" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <span>🎵</span> TikTok
+              </a>
+              <a href="${CONFIG.SOCMED_LINKS.YOUTUBE}" target="_blank" rel="noopener" class="btn btn--secondary" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <span>📺</span> YouTube
+              </a>
+              <a href="${CONFIG.SOCMED_LINKS.FACEBOOK}" target="_blank" rel="noopener" class="btn btn--secondary" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <span>👥</span> Facebook
+              </a>
+              <a href="${CONFIG.SOCMED_LINKS.PLAY_STORE}" target="_blank" rel="noopener" class="btn btn--secondary" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <span>🎮</span> Play Store
+              </a>
+            </div>
           </div>
           
           <!-- Supporter Code -->
@@ -108,38 +134,38 @@ const SupportPage = {
       ${Components.BottomNav('support')}
     `;
 
-        // Attach listeners
-        this.attachListeners();
-    },
+    // Attach listeners
+    this.attachListeners();
+  },
 
-    /**
-     * Attach event listeners
-     */
-    attachListeners() {
-        const form = document.getElementById('supporter-form');
-        if (form) {
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
+  /**
+   * Attach event listeners
+   */
+  attachListeners() {
+    const form = document.getElementById('supporter-form');
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
 
-                const input = document.getElementById('supporter-code-input');
-                const code = input.value.trim();
+        const input = document.getElementById('supporter-code-input');
+        const code = input.value.trim();
 
-                const isValid = Storage.setSupporterCode(code);
+        const isValid = Storage.setSupporterCode(code);
 
-                if (isValid) {
-                    Utils.showToast('Supporter unlocked! Thank you! 💖', 'success');
-                    // Reload page to show unlocked state
-                    setTimeout(() => {
-                        this.init();
-                    }, 1000);
-                } else {
-                    Utils.showToast('Invalid code. Please try again.', 'error');
-                    input.value = '';
-                    input.focus();
-                }
-            });
+        if (isValid) {
+          Utils.showToast('Supporter unlocked! Thank you! 💖', 'success');
+          // Reload page to show unlocked state
+          setTimeout(() => {
+            this.init();
+          }, 1000);
+        } else {
+          Utils.showToast('Invalid code. Please try again.', 'error');
+          input.value = '';
+          input.focus();
         }
+      });
     }
+  }
 };
 
 export default SupportPage;

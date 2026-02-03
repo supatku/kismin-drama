@@ -127,7 +127,7 @@ const Components = {
    * @param {boolean} showBack
    * @returns {string} HTML string
    */
-  Header(title = 'KISMIN Drama', showBack = false) {
+  Header(title = 'Toktok', showBack = false) {
     return `
       <header class="app-header">
         ${showBack ? '<button class="btn-back" onclick="history.back()">←</button>' : ''}

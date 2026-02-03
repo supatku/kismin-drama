@@ -5,7 +5,7 @@
 
 export const CONFIG = {
   // App Info
-  APP_NAME: 'KISMIN Drama',
+  APP_NAME: 'Toktok',
   APP_VERSION: '1.0.0',
 
   // API Configuration
@@ -53,7 +53,16 @@ export const CONFIG = {
   // Support Links
   SUPPORT_LINKS: {
     SAWERIA: 'https://saweria.co/ahmadsaoghi',
-    TRAKTEER: 'https://trakteer.id/oghiezr/tip'
+    TRAKTEER: 'https://trakteer.id/oghiezr/tip',
+    LYNKID: 'https://lynk.id/oghiezr/'
+  },
+
+  // Social Media Links
+  SOCMED_LINKS: {
+    TIKTOK: 'https://www.tiktok.com/@scenecrafter',
+    YOUTUBE: 'https://www.youtube.com/@TangkoScene',
+    FACEBOOK: 'https://www.facebook.com/profile.php?id=100062981843383',
+    PLAY_STORE: 'https://play.google.com/store/apps/dev?id=6776713849029120132&hl=en'
   },
 
   // Supporter Features
