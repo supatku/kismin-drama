@@ -21,7 +21,7 @@ const Mappers = {
         return {
             id: dto.detailPath || dto.id,
             title: dto.title || 'Unknown Title',
-            thumbnail: dto.poster || 'https://via.placeholder.com/300x450?text=No+Image',
+            thumbnail: dto.poster || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="450"%3E%3Crect fill="%23222" width="300" height="450"/%3E%3Ctext fill="%23999" font-family="Arial,sans-serif" font-size="18" text-anchor="middle" x="150" y="225"%3ENo Image%3C/text%3E%3C/svg%3E',
             rating: dto.rating || '0',
             year: dto.year || '',
             genre: dto.genre || '',
@@ -173,7 +173,7 @@ const API = {
             return {
                 title: 'Content Not Available',
                 synopsis: 'This content is currently unavailable. Please try again later or check other content.',
-                thumbnail: 'https://via.placeholder.com/800x450?text=Content+Not+Available',
+                thumbnail: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="450"%3E%3Crect fill="%23222" width="800" height="450"/%3E%3Ctext fill="%23999" font-family="Arial,sans-serif" font-size="24" text-anchor="middle" x="400" y="225"%3EContent Not Available%3C/text%3E%3C/svg%3E',
                 rating: '0',
                 year: '2024',
                 genre: 'General',
@@ -187,7 +187,7 @@ const API = {
             return {
                 title: 'Error Loading Content',
                 synopsis: `Unable to load content: ${error.message}`,
-                thumbnail: 'https://via.placeholder.com/800x450?text=Error+Loading',
+                thumbnail: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="450"%3E%3Crect fill="%23222" width="800" height="450"/%3E%3Ctext fill="%23999" font-family="Arial,sans-serif" font-size="24" text-anchor="middle" x="400" y="225"%3EError Loading%3C/text%3E%3C/svg%3E',
                 rating: '0',
                 year: '2024',
                 genre: 'Error',

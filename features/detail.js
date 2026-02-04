@@ -66,7 +66,7 @@ const DetailPage = {
       this.currentItem = {
         title: 'Content Unavailable',
         synopsis: 'This content is currently not available. Please try browsing other content.',
-        thumbnail: 'https://via.placeholder.com/800x450?text=Content+Not+Available',
+        thumbnail: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="450"%3E%3Crect fill="%23222" width="800" height="450"/%3E%3Ctext fill="%23999" font-family="Arial,sans-serif" font-size="24" text-anchor="middle" x="400" y="225"%3EContent Not Available%3C/text%3E%3C/svg%3E',
         rating: '0',
         year: '2024',
         genre: 'General',
@@ -254,13 +254,17 @@ const DetailPage = {
     const fileId = this.extractGoogleDriveFileId(videoUrl);
 
     if (fileId) {
-      // Google Drive URL
-      embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
-      console.log('[DetailPage] Using Google Drive embed');
+      // Google Drive URL with autoplay
+      embedUrl = `https://drive.google.com/file/d/${fileId}/preview?autoplay=1`;
+      console.log('[DetailPage] Using Google Drive embed with autoplay');
     } else if (videoUrl.startsWith('http')) {
-      // External embed URL (use directly)
+      // External embed URL (add autoplay if not present)
       embedUrl = videoUrl;
-      console.log('[DetailPage] Using external embed URL');
+      // Add autoplay parameter if URL doesn't already have it
+      if (!embedUrl.includes('autoplay')) {
+        embedUrl += (embedUrl.includes('?') ? '&' : '?') + 'autoplay=1';
+      }
+      console.log('[DetailPage] Using external embed URL with autoplay');
     } else {
       Utils.showToast('Invalid video URL', 'error');
       return;
@@ -328,7 +332,7 @@ const DetailPage = {
             id="inline-video-iframe" 
             style="width:100%; height:100%; border:none;" 
             allowfullscreen 
-            allow="autoplay; encrypted-media"
+            allow="autoplay; encrypted-media; fullscreen"
             loading="eager"
             importance="high"
           ></iframe>
@@ -396,6 +400,37 @@ const DetailPage = {
       console.log('[DetailPage] Video loaded');
       loading.style.display = 'none';
       iframeWrapper.style.display = 'block';
+
+      // Trigger autoplay using multiple strategies
+      // This bypasses browser autoplay restrictions for external players
+      setTimeout(() => {
+        try {
+          // Strategy 1: Send postMessage to iframe (for compatible players)
+          iframe.contentWindow?.postMessage({ action: 'play' }, '*');
+
+          // Strategy 2: Dispatch click event on iframe
+          const clickEvent = new MouseEvent('click', {
+            view: window,
+            bubbles: true,
+            cancelable: true
+          });
+          iframe.dispatchEvent(clickEvent);
+
+          // Strategy 3: Focus iframe and send spacebar (play/pause key)
+          iframe.focus();
+          const spaceEvent = new KeyboardEvent('keydown', {
+            key: ' ',
+            code: 'Space',
+            keyCode: 32,
+            bubbles: true
+          });
+          iframe.dispatchEvent(spaceEvent);
+
+          console.log('[DetailPage] Autoplay triggered via multiple strategies');
+        } catch (err) {
+          console.warn('[DetailPage] Autoplay trigger failed:', err);
+        }
+      }, 800);
 
       // Setup tap overlay and Next Episode button
       const tapOverlay = document.getElementById('tap-overlay');

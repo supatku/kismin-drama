@@ -211,6 +211,10 @@ const HomePage = {
             let items;
             if (bypassCache) {
                 items = await API._fetchByCategoryUncached(category, page);
+                // Update cache with fresh data after manual refresh
+                if (items && items.length > 0) {
+                    API.updateCategoryCache(category, page, items);
+                }
             } else {
                 items = await API.fetchByCategory(category, page);
             }
