@@ -1,0 +1,19 @@
+# Toktok SEO Robots.txt
+# https://drama.veoprompt.site/
+
+User-agent: *
+Allow: /
+Allow: /index.html
+Allow: /app.js
+Allow: /styles.css
+Allow: /features/
+Allow: /core/
+Allow: /shared/
+Disallow: /src/
+Disallow: /kismin-drama/
+
+# Sitemap Location
+Sitemap: https://drama.veoprompt.site/sitemap.xml
+
+# Crawl-delay (optional, for polite crawling)
+Crawl-delay: 1

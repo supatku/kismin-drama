@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="description" content="Watch dramas for free - KISMIN Drama streaming app">
+  
+  <!-- PWA Meta -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  
+  <title>KISMIN Drama</title>
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- HLS.js for video streaming -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.7/dist/hls.min.js"></script>
+  
+  <!-- Telegram WebApp SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+  <!-- Main App Container -->
+  <div id="app" class="app-container">
+    <!-- Content will be injected here by JavaScript -->
+    <div class="page">
+      <div style="text-align: center; padding: var(--spacing-2xl); color: var(--color-text-muted);">
+        <div style="font-size: 3rem; margin-bottom: var(--spacing-md);">🎬</div>
+        <p>Loading KISMIN Drama...</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Scripts - Loading as ES6 modules -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>
