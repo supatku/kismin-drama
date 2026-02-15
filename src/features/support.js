@@ -47,8 +47,12 @@ const SupportPage = {
               🎁 Support via Trakteer
             </a>
 
-            <a href="${CONFIG.SUPPORT_LINKS.LYNKID}" target="_blank" rel="noopener" class="btn btn--secondary btn--full">
+            <a href="${CONFIG.SUPPORT_LINKS.LYNKID}" target="_blank" rel="noopener" class="btn btn--secondary btn--full mb-md">
               🔗 Visit Lynk.id
+            </a>
+
+            <a href="${CONFIG.SUPPORT_LINKS.SELLAPP}" target="_blank" rel="noopener" class="btn btn--secondary btn--full">
+              🛍️ Visit SellApp
             </a>
           </div>
 

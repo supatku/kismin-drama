@@ -72,7 +72,8 @@ export const CONFIG = {
   SUPPORT_LINKS: {
     SAWERIA: 'https://saweria.co/ahmadsaoghi',
     TRAKTEER: 'https://trakteer.id/oghiezr/tip',
-    LYNKID: 'https://lynk.id/oghiezr/'
+    LYNKID: 'https://lynk.id/oghiezr/',
+    SELLAPP: 'https://sellappku.netlify.app/'
   },
 
   // Social Media Links
