@@ -17,16 +17,16 @@ import CacheManager from './cache_manager.js';
  * @param {number} h - Target height
  * @returns {string} Proxied or original URL
  */
+const FALLBACK_SVG = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 450' fill='none'%3E%3Crect width='300' height='450' fill='%231a1a1a'/%3E%3Cpath d='M130 180 L130 270 L190 225Z' fill='%23333'/%3E%3Ccircle cx='150' cy='225' r='50' stroke='%23333' stroke-width='3' fill='none'/%3E%3C/svg%3E";
+
 function proxyImageUrl(url, w = 300, h = 450) {
-    if (!url) return CONFIG.PLACEHOLDER_IMAGE;
+    if (!url || url.includes('placeholder')) return CONFIG.PLACEHOLDER_IMAGE || FALLBACK_SVG;
 
     // Skip proxying for URLs that already work reliably
     const skipProxyPatterns = [
         'lh3.googleusercontent.com',  // Google Drive direct images
-        CONFIG.PLACEHOLDER_IMAGE,      // Already using our placeholder
-        'data:',                       // Data URIs
+        'data:image/svg',              // Local SVG data URIs
         'wsrv.nl',                     // Already proxied
-        'blob:',                       // Blob URLs
     ];
 
     if (skipProxyPatterns.some(pattern => url.includes(pattern))) {
@@ -211,7 +211,7 @@ const API = {
             return {
                 title: 'Content Not Available',
                 synopsis: 'This content is currently unavailable. Please try again later or check other content.',
-                thumbnail: 'https://via.placeholder.com/800x450?text=Content+Not+Available',
+                thumbnail: CONFIG.PLACEHOLDER_IMAGE || FALLBACK_SVG,
                 rating: '0',
                 year: '2024',
                 genre: 'General',
@@ -225,7 +225,7 @@ const API = {
             return {
                 title: 'Error Loading Content',
                 synopsis: `Unable to load content: ${error.message}`,
-                thumbnail: 'https://via.placeholder.com/800x450?text=Error+Loading',
+                thumbnail: CONFIG.PLACEHOLDER_IMAGE || FALLBACK_SVG,
                 rating: '0',
                 year: '2024',
                 genre: 'Error',

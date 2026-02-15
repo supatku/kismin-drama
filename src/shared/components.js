@@ -21,10 +21,10 @@ const Components = {
       <div class="drama-card" data-id="${item.id}">
         <div class="drama-card__thumbnail">
           <img 
-            src="${item.thumbnail}" 
+            src="${item.thumbnail || 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 300 450\' fill=\'none\'%3E%3Crect width=\'300\' height=\'450\' fill=\'%231a1a1a\'/%3E%3Cpath d=\'M130 180 L130 270 L190 225Z\' fill=\'%23333\'/%3E%3Ccircle cx=\'150\' cy=\'225\' r=\'50\' stroke=\'%23333\' stroke-width=\'3\' fill=\'none\'/%3E%3C/svg%3E'}" 
             alt="${Utils.escapeHtml(item.title)}" 
             loading="lazy"
-            onerror="this.onerror=null;this.src=CONFIG.PLACEHOLDER_IMAGE;this.classList.add('img-error');console.warn('[DramaCard] Thumbnail failed:', this.dataset.originalSrc || 'unknown');"
+            onerror="this.onerror=null;this.src='data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 300 450\' fill=\'none\'%3E%3Crect width=\'300\' height=\'450\' fill=\'%231a1a1a\'/%3E%3Cpath d=\'M130 180 L130 270 L190 225Z\' fill=\'%23333\'/%3E%3Ccircle cx=\'150\' cy=\'225\' r=\'50\' stroke=\'%23333\' stroke-width=\'3\' fill=\'none\'/%3E%3C/svg%3E';this.classList.add('img-error');"
             data-original-src="${item.thumbnail}"
           >
           <div class="drama-card__rating">⭐ ${item.rating}</div>

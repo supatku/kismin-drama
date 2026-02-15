@@ -62,7 +62,7 @@ const DetailPage = {
       this.currentItem = {
         title: 'Content Unavailable',
         synopsis: 'This content is currently not available. Please try browsing other content.',
-        thumbnail: 'https://via.placeholder.com/800x450?text=Content+Not+Available',
+        thumbnail: typeof CONFIG !== 'undefined' ? CONFIG.PLACEHOLDER_IMAGE : '',
         rating: '0',
         year: '2024',
         genre: 'General',
