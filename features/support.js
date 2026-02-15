@@ -52,7 +52,7 @@ const SupportPage = {
             </a>
 
             <a href="${CONFIG.SUPPORT_LINKS.SELLAPP}" target="_blank" rel="noopener" class="btn btn--secondary btn--full">
-              🛍️ Visit SellApp
+              🛍️ Pesen App
             </a>
           </div>
 
