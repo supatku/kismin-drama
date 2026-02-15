@@ -13,6 +13,9 @@ export const CONFIG = {
   API_BASE_URL: 'https://zeldvorik.ru/apiv3/api.php',
   API_TIMEOUT: 20000, // 20 seconds for Rebahan
 
+  // Placeholder Image (Inline SVG data URI)
+  PLACEHOLDER_IMAGE: "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 450' fill='none'%3E%3Crect width='300' height='450' fill='%231a1a1a'/%3E%3Cpath d='M130 180 L130 270 L190 225Z' fill='%23333'/%3E%3Ccircle cx='150' cy='225' r='50' stroke='%23333' stroke-width='3' fill='none'/%3E%3C/svg%3E",
+
   // Rebahan Categories
   CATEGORIES: [
     { id: 'trending', label: 'Trending' },

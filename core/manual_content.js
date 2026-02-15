@@ -21,7 +21,7 @@ const ManualContentAPI = {
    * @returns {string} - Direct accessible URL
    */
   convertDriveImageUrl(url) {
-    if (!url) return 'https://via.placeholder.com/300x450?text=No+Image';
+    if (!url || url.includes('placeholder')) return typeof CONFIG !== 'undefined' ? CONFIG.PLACEHOLDER_IMAGE : '';
 
     // Extract file ID from various Google Drive URL formats
     let fileId = null;
