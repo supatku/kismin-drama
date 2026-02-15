@@ -47,12 +47,8 @@ const SupportPage = {
               🎁 Support via Trakteer
             </a>
 
-            <a href="${CONFIG.SUPPORT_LINKS.LYNKID}" target="_blank" rel="noopener" class="btn btn--secondary btn--full mb-md">
+            <a href="${CONFIG.SUPPORT_LINKS.LYNKID}" target="_blank" rel="noopener" class="btn btn--secondary btn--full">
               🔗 Visit Lynk.id
-            </a>
-
-            <a href="${CONFIG.SUPPORT_LINKS.SELLAPP}" target="_blank" rel="noopener" class="btn btn--secondary btn--full">
-              🛍️ Pesen App
             </a>
           </div>
 
@@ -77,6 +73,9 @@ const SupportPage = {
               </a>
               <a href="${CONFIG.SOCMED_LINKS.PLAY_STORE_BIRA}" target="_blank" rel="noopener" class="btn btn--secondary" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
                 <span>🎮</span> BiraaStudio
+              </a>
+              <a href="${CONFIG.SUPPORT_LINKS.SELLAPP}" target="_blank" rel="noopener" class="btn btn--secondary" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <span>🛍️</span> Pesen App
               </a>
             </div>
           </div>
