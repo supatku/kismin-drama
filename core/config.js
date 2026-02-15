@@ -65,7 +65,8 @@ export const CONFIG = {
     TIKTOK: 'https://www.tiktok.com/@scenecrafter',
     YOUTUBE: 'https://www.youtube.com/@TangkoScene',
     FACEBOOK: 'https://www.facebook.com/profile.php?id=100062981843383',
-    PLAY_STORE: 'https://play.google.com/store/apps/dev?id=6776713849029120132&hl=en'
+    PLAY_STORE: 'https://play.google.com/store/apps/dev?id=6776713849029120132&hl=en',
+    PLAY_STORE_BIRA: 'https://play.google.com/store/apps/developer?id=BiraaStudio'
   },
 
   // Supporter Features

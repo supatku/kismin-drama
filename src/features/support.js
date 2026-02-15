@@ -69,7 +69,10 @@ const SupportPage = {
                 <span>👥</span> Facebook
               </a>
               <a href="${CONFIG.SOCMED_LINKS.PLAY_STORE}" target="_blank" rel="noopener" class="btn btn--secondary" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-                <span>🎮</span> Play Store
+                <span>🎮</span> TangkoScene
+              </a>
+              <a href="${CONFIG.SOCMED_LINKS.PLAY_STORE_BIRA}" target="_blank" rel="noopener" class="btn btn--secondary" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <span>🎮</span> BiraaStudio
               </a>
             </div>
           </div>
