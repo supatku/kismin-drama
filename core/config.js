@@ -6,7 +6,7 @@
 export const CONFIG = {
   // App Info
   APP_NAME: 'Toktok',
-  APP_VERSION: '1.0.0',
+  APP_VERSION: '1.0.1',
 
   // API Configuration
   USE_MOCK_DATA: false,
