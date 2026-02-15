@@ -24,7 +24,8 @@ const Components = {
             src="${item.thumbnail}" 
             alt="${Utils.escapeHtml(item.title)}" 
             loading="lazy"
-            onerror="this.onerror=null;this.src='data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 300 450\' fill=\'none\'><rect width=\'300\' height=\'450\' fill=\'%23242424\'/><path d=\'M130 180 L130 270 L190 225Z\' fill=\'%23444\'/><circle cx=\'150\' cy=\'225\' r=\'50\' stroke=\'%23444\' stroke-width=\'3\' fill=\'none\'/></svg>')}';this.classList.add('img-error')"
+            onerror="this.onerror=null;this.src=CONFIG.PLACEHOLDER_IMAGE;this.classList.add('img-error');console.warn('[DramaCard] Thumbnail failed:', this.dataset.originalSrc || 'unknown');"
+            data-original-src="${item.thumbnail}"
           >
           <div class="drama-card__rating">⭐ ${item.rating}</div>
         </div>

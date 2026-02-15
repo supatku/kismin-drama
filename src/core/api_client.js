@@ -18,12 +18,12 @@ import CacheManager from './cache_manager.js';
  * @returns {string} Proxied or original URL
  */
 function proxyImageUrl(url, w = 300, h = 450) {
-    if (!url) return 'https://via.placeholder.com/300x450?text=No+Image';
+    if (!url) return CONFIG.PLACEHOLDER_IMAGE;
 
     // Skip proxying for URLs that already work reliably
     const skipProxyPatterns = [
         'lh3.googleusercontent.com',  // Google Drive direct images
-        'via.placeholder.com',         // Placeholder service
+        CONFIG.PLACEHOLDER_IMAGE,      // Already using our placeholder
         'data:',                       // Data URIs
         'wsrv.nl',                     // Already proxied
         'blob:',                       // Blob URLs
@@ -35,7 +35,8 @@ function proxyImageUrl(url, w = 300, h = 450) {
 
     // Use wsrv.nl image proxy — free, fast, reliable
     // Docs: https://wsrv.nl/docs/
-    return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=${w}&h=${h}&fit=cover&output=webp&default=${encodeURIComponent('https://via.placeholder.com/300x450?text=No+Image')}`;
+    // Use a stable default (blank box) instead of an external placeholder service
+    return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=${w}&h=${h}&fit=cover&output=webp`;
 }
 
 /**

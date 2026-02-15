@@ -13,7 +13,7 @@ const ManualContentAPI = {
    * @returns {string} - Direct accessible URL
    */
   convertDriveImageUrl(url) {
-    if (!url) return 'https://via.placeholder.com/300x450?text=No+Image';
+    if (!url) return typeof CONFIG !== 'undefined' ? CONFIG.PLACEHOLDER_IMAGE : '';
 
     // Extract file ID from various Google Drive URL formats
     let fileId = null;
@@ -50,14 +50,14 @@ const ManualContentAPI = {
     try {
       console.log('[ManualContent] Fetching dramas from:', this.SHEETS_API_URL);
       const response = await fetch(`${this.SHEETS_API_URL}?action=dramas`);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      
+
       const data = await response.json();
       console.log('[ManualContent] Raw drama data:', data);
-      
+
       if (!Array.isArray(data)) {
         console.error('[ManualContent] Expected array, got:', typeof data);
         return [];
@@ -74,7 +74,7 @@ const ManualContentAPI = {
         totalEpisodes: drama.total_episodes,
         isManual: true
       }));
-      
+
       console.log('[ManualContent] Mapped dramas:', mappedData);
       return mappedData;
     } catch (error) {
