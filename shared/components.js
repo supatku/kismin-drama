@@ -24,13 +24,13 @@ const Components = {
             src="${item.thumbnail}" 
             alt="${Utils.escapeHtml(item.title)}" 
             loading="lazy"
-            style="aspect-ratio: 2/3; width: 100%; height: 100%; object-fit: cover;"
+            onerror="this.onerror=null;this.src='data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 300 450\' fill=\'none\'><rect width=\'300\' height=\'450\' fill=\'%23242424\'/><path d=\'M130 180 L130 270 L190 225Z\' fill=\'%23444\'/><circle cx=\'150\' cy=\'225\' r=\'50\' stroke=\'%23444\' stroke-width=\'3\' fill=\'none\'/></svg>')}';this.classList.add('img-error')"
           >
           <div class="drama-card__rating">⭐ ${item.rating}</div>
         </div>
         <div class="drama-card__content">
           <h3 class="drama-card__title">${Utils.escapeHtml(item.title)}</h3>
-          <p class="drama-card__meta">${item.year} • ${Utils.escapeHtml(item.genus)}</p>
+          <p class="drama-card__meta">${item.year} • ${Utils.escapeHtml(item.genre || '')}</p>
         </div>
         <button class="drama-card__favorite" data-drama-id="${item.id}" aria-label="Toggle favorite">
           ${heartIcon}

@@ -9,6 +9,36 @@ import ManualContentAPI from './manual_content.js';
 import CacheManager from './cache_manager.js';
 
 /**
+ * Proxy external image URLs through wsrv.nl to bypass hotlink protection & CORS.
+ * Also optimizes images (resize + WebP conversion).
+ * Skips URLs that are already reliable (Google Drive, placeholder, data URIs).
+ * @param {string} url - Original image URL
+ * @param {number} w - Target width
+ * @param {number} h - Target height
+ * @returns {string} Proxied or original URL
+ */
+function proxyImageUrl(url, w = 300, h = 450) {
+    if (!url) return 'https://via.placeholder.com/300x450?text=No+Image';
+
+    // Skip proxying for URLs that already work reliably
+    const skipProxyPatterns = [
+        'lh3.googleusercontent.com',  // Google Drive direct images
+        'via.placeholder.com',         // Placeholder service
+        'data:',                       // Data URIs
+        'wsrv.nl',                     // Already proxied
+        'blob:',                       // Blob URLs
+    ];
+
+    if (skipProxyPatterns.some(pattern => url.includes(pattern))) {
+        return url;
+    }
+
+    // Use wsrv.nl image proxy — free, fast, reliable
+    // Docs: https://wsrv.nl/docs/
+    return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=${w}&h=${h}&fit=cover&output=webp&default=${encodeURIComponent('https://via.placeholder.com/300x450?text=No+Image')}`;
+}
+
+/**
  * Mapper functions to normalize API responses
  */
 const Mappers = {
@@ -21,7 +51,7 @@ const Mappers = {
         return {
             id: dto.detailPath || dto.id,
             title: dto.title || 'Unknown Title',
-            thumbnail: dto.poster || 'https://via.placeholder.com/300x450?text=No+Image',
+            thumbnail: proxyImageUrl(dto.poster),
             rating: dto.rating || '0',
             year: dto.year || '',
             genre: dto.genre || '',
@@ -38,7 +68,7 @@ const Mappers = {
         return {
             title: dto.title || 'Unknown Title',
             synopsis: dto.description || '',
-            thumbnail: dto.poster || '',
+            thumbnail: proxyImageUrl(dto.poster, 800, 450),
             rating: dto.rating || '0',
             year: dto.year || '',
             genre: dto.genre || '',

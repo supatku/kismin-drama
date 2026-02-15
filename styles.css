@@ -299,7 +299,40 @@ a {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform var(--transition-slow);
+  transition: transform var(--transition-slow), opacity 0.4s ease;
+  background: linear-gradient(135deg,
+      var(--color-bg-secondary) 0%,
+      var(--color-bg-elevated) 40%,
+      var(--color-bg-secondary) 60%,
+      var(--color-bg-elevated) 100%);
+  background-size: 300% 300%;
+  animation: img-shimmer 2s ease-in-out infinite;
+}
+
+.drama-card__thumbnail img.lazy-loaded,
+.drama-card__thumbnail img[src^="http"]:not(.img-error) {
+  animation: none;
+  background: var(--color-bg-elevated);
+}
+
+.drama-card__thumbnail img.img-error {
+  animation: none;
+  opacity: 0.5;
+  background: var(--color-bg-elevated);
+}
+
+@keyframes img-shimmer {
+  0% {
+    background-position: 100% 100%;
+  }
+
+  50% {
+    background-position: 0% 0%;
+  }
+
+  100% {
+    background-position: 100% 100%;
+  }
 }
 
 .drama-card:hover .drama-card__thumbnail img {
