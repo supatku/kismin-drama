@@ -42,6 +42,17 @@ const HomePage = {
       ${Components.Header('Toktok', false)}
       <div class="page">
         ${Components.SearchBar()}
+        <div class="search-notice-marquee" style="background: rgba(255,0,0,0.1); padding: 6px 0; border-bottom: 1px solid var(--color-bg-elevated); overflow: hidden; white-space: nowrap; margin-top: -10px; margin-bottom: 10px; border-radius: 4px;">
+          <div style="display: inline-block; padding-left: 100%; animation: searchMarquee 20s linear infinite; color: #ff0000; font-weight: 900; font-size: 14px; text-transform: uppercase;">
+            cari film favorit kamu lewat pencarian ya dan jangan lupa bantu share ke teman ya 🤗
+          </div>
+        </div>
+        <style>
+        @keyframes searchMarquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-100%); }
+        }
+        </style>
         <div id="category-section">
           <div class="category-tabs" id="category-tabs">
             ${CONFIG.CATEGORIES.map(cat => `
@@ -64,6 +75,9 @@ const HomePage = {
       </div>
       ${Components.BottomNav('home')}
     `;
+
+        // Make HomePage globally accessible for the retry button
+        window.HomePage = this;
 
         // Load first page
         await this.loadCategory(this.currentCategory, 1, true);
@@ -288,11 +302,17 @@ const HomePage = {
             console.error('[HomePage] Error loading category:', error);
             if (reset) {
                 try {
-                    const manualItems = await ManualContentAPI.fetchManualDramas();
-                    if (manualItems.length > 0) {
-                        listContainer.innerHTML = manualItems.map(item => Components.DramaCard(item)).join('');
-                        if (window.LazyLoader) {
-                            setTimeout(() => window.LazyLoader.observeAll(listContainer), 50);
+                    // Manual content fallback restricted to trending and kdrama
+                    if (category === 'trending' || category === 'kdrama') {
+                        console.log('[HomePage] Loading manual content fallback for:', category);
+                        const manualItems = await ManualContentAPI.fetchManualDramas();
+                        if (manualItems.length > 0) {
+                            listContainer.innerHTML = manualItems.map(item => Components.DramaCard(item)).join('');
+                            if (window.LazyLoader) {
+                                setTimeout(() => window.LazyLoader.observeAll(listContainer), 50);
+                            }
+                        } else {
+                            listContainer.innerHTML = Components.ErrorMessage('Failed to load content');
                         }
                     } else {
                         listContainer.innerHTML = Components.ErrorMessage('Failed to load content');
@@ -304,6 +324,14 @@ const HomePage = {
         } finally {
             this.isFetching = false;
         }
+    },
+
+    /**
+     * Retry loading current category
+     */
+    retryLoadCategory() {
+        console.log('[HomePage] Retrying category:', this.currentCategory);
+        this.loadCategory(this.currentCategory, 1, true);
     },
 
     /**

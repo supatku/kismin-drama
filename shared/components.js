@@ -108,7 +108,7 @@ const Components = {
       <div class="error-card">
         <div class="error-card__icon">⚠️</div>
         <p class="error-card__message">${Utils.escapeHtml(message)}</p>
-        <button class="btn btn--secondary" onclick="location.reload()">Retry</button>
+        <button class="btn btn--secondary" onclick="window.HomePage ? window.HomePage.retryLoadCategory() : location.reload()">Muat Ulang</button>
       </div>
     `;
   },

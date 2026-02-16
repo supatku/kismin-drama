@@ -13,6 +13,24 @@ import CacheManager from './cache_manager.js';
  */
 const FALLBACK_SVG = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 450' fill='none'%3E%3Crect width='300' height='450' fill='%231a1a1a'/%3E%3Cpath d='M130 180 L130 270 L190 225Z' fill='%23333'/%3E%3Ccircle cx='150' cy='225' r='50' stroke='%23333' stroke-width='3' fill='none'/%3E%3C/svg%3E";
 
+/**
+ * Notice: "cari film favorit kamu lewat pencarian ya dan jangan lupa bantu share ke teman ya 🤗"
+ * For surgical injection without breaking existing components
+ */
+const SEARCH_NOTICE_HTML = `
+<div class="search-notice-marquee" style="background: #1a1a1a; padding: 4px 0; border-bottom: 1px solid #333; overflow: hidden; white-space: nowrap;">
+  <div style="display: inline-block; padding-left: 100%; animation: searchMarquee 15s linear infinite; color: #ff0000; font-weight: bold;">
+    cari film favorit kamu lewat pencarian ya dan jangan lupa bantu share ke teman ya 🤗
+  </div>
+</div>
+<style>
+@keyframes searchMarquee {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(-100%, 0); }
+}
+</style>
+`;
+
 function proxyImageUrl(url, w = 300, h = 450) {
     if (!url || url.includes('placeholder')) return CONFIG.PLACEHOLDER_IMAGE || FALLBACK_SVG;
 
@@ -101,9 +119,9 @@ const API = {
         let externalItems = [];
 
         try {
-            // Always try to fetch manual content first
-            if (category === 'trending' || category === 'indonesian-drama' || category === 'kdrama') {
-                console.log('[API] Fetching manual content for category:', category);
+            // Manual content restricted to trending and kdrama
+            if (category === 'trending' || category === 'kdrama') {
+                console.log('[API] Fetching manual content for restricted category:', category);
                 manualItems = await ManualContentAPI.fetchManualDramas();
                 console.log('[API] Manual items loaded:', manualItems.length);
             }
