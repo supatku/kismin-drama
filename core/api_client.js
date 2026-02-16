@@ -112,39 +112,55 @@ const API = {
 
     /**
      * Internal uncached fetch by category
+     * Uses Promise.allSettled for PARALLEL fetching (manual + external)
      * @private
      */
     async _fetchByCategoryUncached(category, page = 1) {
         let manualItems = [];
         let externalItems = [];
 
-        try {
-            // Manual content restricted to trending and kdrama
-            if (category === 'trending' || category === 'kdrama') {
-                console.log('[API] Fetching manual content for restricted category:', category);
-                manualItems = await ManualContentAPI.fetchManualDramas();
-                console.log('[API] Manual items loaded:', manualItems.length);
-            }
-        } catch (error) {
-            console.error('[API] Manual content error:', error);
+        // Build fetch promises to run in PARALLEL
+        const fetchPromises = [];
+
+        // Promise 1: Manual content (only for trending and kdrama)
+        const shouldFetchManual = page === 1 && (category === 'trending' || category === 'kdrama');
+        if (shouldFetchManual) {
+            fetchPromises.push(
+                ManualContentAPI.fetchManualDramas()
+                    .then(items => ({ source: 'manual', items }))
+                    .catch(err => { console.error('[API] Manual content error:', err); return { source: 'manual', items: [] }; })
+            );
         }
 
-        try {
-            // Try to fetch from external API
-            console.log('[API] Fetching external content for category:', category);
-            const url = CONFIG.buildUrl(CONFIG.ENDPOINTS.CATEGORY, { category, page });
-            const data = await this._fetch(url);
+        // Promise 2: External API (always)
+        const externalUrl = CONFIG.buildUrl(CONFIG.ENDPOINTS.CATEGORY, { category, page });
+        fetchPromises.push(
+            this._fetch(externalUrl)
+                .then(data => {
+                    if (data.success && Array.isArray(data.items || data.data)) {
+                        return { source: 'external', items: (data.items || data.data).map(item => Mappers.mapItem(item)) };
+                    }
+                    return { source: 'external', items: [] };
+                })
+                .catch(err => { console.error('[API] External API error:', err); return { source: 'external', items: [] }; })
+        );
 
-            if (data.success && Array.isArray(data.items || data.data)) {
-                const items = data.items || data.data;
-                externalItems = items.map(item => Mappers.mapItem(item));
-                console.log('[API] External items loaded:', externalItems.length);
+        // Execute ALL fetches in parallel
+        console.log(`[API] Fetching ${fetchPromises.length} source(s) in PARALLEL for: ${category} page ${page}`);
+        const results = await Promise.allSettled(fetchPromises);
+
+        // Collect results
+        results.forEach(result => {
+            if (result.status === 'fulfilled') {
+                const { source, items } = result.value;
+                if (source === 'manual') manualItems = items;
+                if (source === 'external') externalItems = items;
             }
-        } catch (error) {
-            console.error('[API] External API error:', error);
-        }
+        });
 
-        // Always return manual content even if external API fails
+        console.log(`[API] Results — manual: ${manualItems.length}, external: ${externalItems.length}`);
+
+        // Manual content first, then external
         const combinedItems = [...manualItems, ...externalItems];
         console.log('[API] Total items returned:', combinedItems.length);
         return combinedItems;

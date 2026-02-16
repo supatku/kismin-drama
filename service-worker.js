@@ -146,27 +146,42 @@ async function cacheFirst(request, cacheName) {
 }
 
 /**
- * Network-first strategy
- * Try network first, fall back to cache
+ * Network-first strategy with race timeout
+ * Try network first (max 5s), fall back to cache if slow/offline
  */
 async function networkFirst(request, cacheName) {
     const cache = await caches.open(cacheName);
+    const NETWORK_TIMEOUT = 5000; // 5 seconds max before cache fallback
 
     try {
-        const response = await fetch(request);
+        // Race: network fetch vs timeout
+        const response = await Promise.race([
+            fetch(request),
+            new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Network timeout')), NETWORK_TIMEOUT)
+            )
+        ]);
+
         if (response.ok) {
             cache.put(request, response.clone());
         }
         return response;
     } catch (error) {
-        console.log('[SW] Network failed, trying cache:', request.url);
+        console.log('[SW] Network slow/failed, trying cache:', request.url);
         const cached = await cache.match(request);
 
         if (cached) {
+            // Serve cache immediately, but try to refresh in background
+            fetch(request).then(response => {
+                if (response && response.ok) {
+                    cache.put(request, response.clone());
+                    console.log('[SW] Background refresh done:', request.url);
+                }
+            }).catch(() => { });
             return cached;
         }
 
-        // Return offline response
+        // No cache available
         return new Response('Offline - No cached data available', {
             status: 503,
             statusText: 'Service Unavailable'
